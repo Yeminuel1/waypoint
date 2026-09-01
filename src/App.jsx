@@ -10,7 +10,7 @@ function rowToShipment(row) {
     recipient: row.recipient, dest: row.dest, service: row.service,
     stage: row.stage, createdAt: row.created_at, eta: row.eta,
     etaTimestamp: row.eta_timestamp, stageTimes: row.stage_times || {},
-    auto: row.auto,
+    stageLabels: row.stage_labels || {}, auto: row.auto,
   };
 }
 
@@ -20,7 +20,7 @@ function shipmentToRow(s) {
     id: s.id, sender: s.sender, origin: s.origin, recipient: s.recipient,
     dest: s.dest, service: s.service, stage: s.stage, created_at: s.createdAt,
     eta: s.eta, eta_timestamp: s.etaTimestamp, stage_times: s.stageTimes,
-    auto: s.auto,
+    stage_labels: s.stageLabels || {}, auto: s.auto,
   };
 }
 
@@ -150,15 +150,16 @@ const SEED_SHIPMENTS = [
   },
 ];
 
-function StageBadge({ stage, stages, icons }) {
+function StageBadge({ stage, stages, icons, labels }) {
   const Icon = icons[stage] || Circle;
   const color = stage === stages.length - 1 ? "#16A34A" : "#E11D2E";
+  const text = labels ? labels[stage] : stages[stage];
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
       style={{ background: `${color}22`, color }}
     >
-      <Icon size={13} /> {stages[stage]}
+      <Icon size={13} /> {text}
     </span>
   );
 }
@@ -192,10 +193,11 @@ function RouteVisual({ stage, stages }) {
   );
 }
 
-function Timeline({ stage, createdAt, stages, icons, stageTimes }) {
+function Timeline({ stage, createdAt, stages, icons, stageTimes, labels }) {
   return (
     <div className="mt-6 space-y-0">
-      {stages.map((label, i) => {
+      {stages.map((defaultLabel, i) => {
+        const label = labels ? labels[i] : defaultLabel;
         const done = i <= stage;
         const Icon = icons[i] || Circle;
         const isLast = i === stages.length - 1;
@@ -657,11 +659,33 @@ export default function LandmarkDemo() {
     });
   }
 
+  // Resolves the display name for each stage of a given shipment: its own
+  // override if set, otherwise the shared/global stage name.
+  function stageLabelsFor(shipment) {
+    return stages.map((defaultLabel, i) => shipment.stageLabels?.[i] || defaultLabel);
+  }
+
   function updateStageTime(shipmentId, index, ms) {
     setShipments((prev) =>
       prev.map((s) =>
         s.id === shipmentId ? { ...s, stageTimes: { ...(s.stageTimes || {}), [index]: ms } } : s
       )
+    );
+  }
+
+  // Per-shipment override for a stage's displayed name — e.g. shipment A's
+  // "In Transit" step can read "Departed Newark, NJ facility" while shipment
+  // B's reads "Departed Dallas, TX facility", instead of every shipment
+  // sharing the same global stage name.
+  function updateStageLabel(shipmentId, index, text) {
+    setShipments((prev) =>
+      prev.map((s) => {
+        if (s.id !== shipmentId) return s;
+        const next = { ...(s.stageLabels || {}) };
+        if (text.trim()) next[index] = text;
+        else delete next[index];
+        return { ...s, stageLabels: next };
+      })
     );
   }
 
@@ -1192,7 +1216,7 @@ export default function LandmarkDemo() {
                     className="mb-5 px-3 py-2 rounded-md text-xs font-medium flex items-center gap-2"
                     style={{ background: "#16A34A22", color: "#16A34A" }}
                   >
-                    <CheckCircle2 size={14} /> Label created — this shipment will auto-progress every few seconds for the demo.
+                    <CheckCircle2 size={14} /> Label created — status updates automatically as your shipment moves.
                   </div>
                 )}
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -1200,7 +1224,7 @@ export default function LandmarkDemo() {
                     <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
                     <p className="display text-2xl mt-0.5">{active.id}</p>
                   </div>
-                  <StageBadge stage={active.stage} stages={stages} icons={stageIcons} />
+                  <StageBadge stage={active.stage} stages={stages} icons={stageIcons} labels={stageLabelsFor(active)} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
@@ -1225,7 +1249,7 @@ export default function LandmarkDemo() {
                   {active.service} service
                 </div>
 
-                <Timeline stage={active.stage} createdAt={active.createdAt} stages={stages} icons={stageIcons} stageTimes={active.stageTimes} />
+                <Timeline stage={active.stage} createdAt={active.createdAt} stages={stages} icons={stageIcons} stageTimes={active.stageTimes} labels={stageLabelsFor(active)} />
               </div>
             )}
           </div>
@@ -1522,7 +1546,7 @@ export default function LandmarkDemo() {
                       className="text-xs font-medium px-2.5 py-1.5 rounded flex items-center gap-1"
                       style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                     >
-                      <CalendarClock size={12} /> {openTimesFor === s.id ? "Hide times" : "Edit times"}
+                      <CalendarClock size={12} /> {openTimesFor === s.id ? "Hide progress" : "Edit progress"}
                     </button>
 
                     <button
@@ -1560,13 +1584,20 @@ export default function LandmarkDemo() {
                         <div key={`${label}-${i}`} className="flex items-center gap-2">
                           <span className="text-xs w-32 shrink-0 truncate" style={{ color: "#A3A3A3" }} title={label}>{label}</span>
                           <input
+                            value={s.stageLabels?.[i] || ""}
+                            onChange={(e) => updateStageLabel(s.id, i, e.target.value)}
+                            placeholder={`Override, e.g. "Arrived at ${s.dest} hub"`}
+                            className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
+                            style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
+                          />
+                          <input
                             type="datetime-local"
                             value={toDatetimeLocal(s.stageTimes?.[i] ?? (s.createdAt + i * 3.2 * 3600 * 1000))}
                             onChange={(e) => {
                               const ms = fromDatetimeLocal(e.target.value);
                               if (ms != null) updateStageTime(s.id, i, ms);
                             }}
-                            className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
+                            className="w-44 shrink-0 px-2.5 py-1.5 rounded text-xs outline-none"
                             style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                           />
                         </div>
@@ -1590,7 +1621,7 @@ export default function LandmarkDemo() {
               <p>
                 This Privacy Notice explains how Landmark Inc. ("Landmark," "we," "us")
                 collects, uses, and protects information in connection with our shipping and tracking
-                services. This is a demo notice for illustrative purposes.
+                services.
               </p>
               <div>
                 <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Information we collect</h3>
@@ -1641,7 +1672,7 @@ export default function LandmarkDemo() {
             <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
               <p>
                 These Terms &amp; Conditions govern your use of Landmark Inc.'s shipping and
-                tracking services. This is a demo notice for illustrative purposes.
+                tracking services.
               </p>
               <div>
                 <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Acceptance of terms</h3>
