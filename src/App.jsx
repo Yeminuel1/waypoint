@@ -1,6 +1,28 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Package, Truck, MapPin, CheckCircle2, Search, Plus, ArrowRight, Clock, ChevronRight, ChevronDown, ChevronUp, ShieldCheck, Trash2, Settings, RefreshCw, Lock, LogOut, Circle, ListChecks, Globe, Warehouse, Building2, Undo2, Zap, FileText, CalendarClock, MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { supabase } from "./lib/supabase";
+
+// Converts a DB row (snake_case) to the app's shipment shape (camelCase).
+function rowToShipment(row) {
+  return {
+    id: row.id, sender: row.sender, origin: row.origin,
+    recipient: row.recipient, dest: row.dest, service: row.service,
+    stage: row.stage, createdAt: row.created_at, eta: row.eta,
+    etaTimestamp: row.eta_timestamp, stageTimes: row.stage_times || {},
+    auto: row.auto,
+  };
+}
+
+// Converts the app's shipment shape back to DB columns for insert/update.
+function shipmentToRow(s) {
+  return {
+    id: s.id, sender: s.sender, origin: s.origin, recipient: s.recipient,
+    dest: s.dest, service: s.service, stage: s.stage, created_at: s.createdAt,
+    eta: s.eta, eta_timestamp: s.etaTimestamp, stage_times: s.stageTimes,
+    auto: s.auto,
+  };
+}
 
 const DEFAULT_STAGES = ["Label Created", "Picked Up", "In Transit", "Out for Delivery", "Customs Clearance", "Delivered"];
 const ICON_MAP = { Package, Truck, MapPin, ShieldCheck, CheckCircle2, Circle };
@@ -381,32 +403,89 @@ export default function LandmarkDemo() {
 
   const active = shipments.find((s) => s.id === activeId) || null;
 
-  // Load saved data from this browser's localStorage on mount. Data persists
-  // across visits on this device, but isn't shared across other devices/users
-  // — wire up a real backend (e.g. Supabase) here for that.
+  // Load shipments + stage config from Supabase on mount, so every device
+  // sees the same data. Falls back to this browser's localStorage if
+  // Supabase isn't configured (e.g. env vars not set yet).
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("landmark-shipments");
-      if (raw) setShipments(JSON.parse(raw));
-    } catch (e) {
-      // nothing saved yet, or storage unavailable — keep seed data
-    }
-    try {
-      const raw = localStorage.getItem("landmark-stages-config");
-      if (raw) {
-        const cfg = JSON.parse(raw);
-        if (cfg.stages) setStages(cfg.stages);
-        if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
+    async function load() {
+      if (supabase) {
+        try {
+          const [shipRes, settingsRes] = await Promise.all([
+            supabase.from("shipments").select("*").order("created_at", { ascending: false }),
+            supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
+          ]);
+          if (shipRes.error) throw shipRes.error;
+          if (shipRes.data && shipRes.data.length > 0) {
+            setShipments(shipRes.data.map(rowToShipment));
+          } else {
+            // Fresh Supabase project with an empty table — seed it once so
+            // there's something to see, and so it's there on future loads.
+            await supabase.from("shipments").upsert(SEED_SHIPMENTS.map(shipmentToRow));
+          }
+          if (settingsRes.data) {
+            if (settingsRes.data.stages) setStages(settingsRes.data.stages);
+            if (settingsRes.data.icon_keys) setStageIconKeys(settingsRes.data.icon_keys);
+          }
+          setLoaded(true);
+          return;
+        } catch (e) {
+          setSaveError(true);
+          // fall through to localStorage below
+        }
       }
-    } catch (e) {
-      // nothing saved yet, or storage unavailable — keep defaults
+      try {
+        const raw = localStorage.getItem("landmark-shipments");
+        if (raw) setShipments(JSON.parse(raw));
+      } catch (e) {
+        // nothing saved yet, or storage unavailable — keep seed data
+      }
+      try {
+        const raw = localStorage.getItem("landmark-stages-config");
+        if (raw) {
+          const cfg = JSON.parse(raw);
+          if (cfg.stages) setStages(cfg.stages);
+          if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
+        }
+      } catch (e) {
+        // nothing saved yet, or storage unavailable — keep defaults
+      }
+      setLoaded(true);
     }
-    setLoaded(true);
+    load();
   }, []);
 
-  // Persist shipments to localStorage whenever they change (after initial load).
+  // Live-sync: reflect shipment changes made elsewhere (another device, or
+  // an admin editing in a different tab) without needing a page reload.
+  useEffect(() => {
+    if (!supabase) return;
+    const channel = supabase
+      .channel("shipments-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shipments" }, (payload) => {
+        if (payload.eventType === "DELETE") {
+          setShipments((prev) => prev.filter((s) => s.id !== payload.old.id));
+        } else {
+          const updated = rowToShipment(payload.new);
+          setShipments((prev) =>
+            prev.some((s) => s.id === updated.id)
+              ? prev.map((s) => (s.id === updated.id ? updated : s))
+              : [updated, ...prev]
+          );
+        }
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  // Persist shipments whenever they change (after initial load) — to
+  // Supabase when configured (so all devices stay in sync), else localStorage.
   useEffect(() => {
     if (!loaded) return;
+    if (supabase) {
+      supabase.from("shipments").upsert(shipments.map(shipmentToRow)).then(({ error }) => {
+        if (error) setSaveError(true);
+      });
+      return;
+    }
     try {
       localStorage.setItem("landmark-shipments", JSON.stringify(shipments));
     } catch (e) {
@@ -414,9 +493,15 @@ export default function LandmarkDemo() {
     }
   }, [shipments, loaded]);
 
-  // Persist stage config to localStorage whenever it changes (after initial load).
+  // Persist stage config whenever it changes (after initial load).
   useEffect(() => {
     if (!loaded) return;
+    if (supabase) {
+      supabase.from("app_settings").upsert({ id: 1, stages, icon_keys: stageIconKeys }).then(({ error }) => {
+        if (error) setSaveError(true);
+      });
+      return;
+    }
     try {
       localStorage.setItem("landmark-stages-config", JSON.stringify({ stages, iconKeys: stageIconKeys }));
     } catch (e) {
@@ -451,6 +536,11 @@ export default function LandmarkDemo() {
   function deleteShipment(id) {
     setShipments((prev) => prev.filter((s) => s.id !== id));
     if (activeId === id) setActiveId(null);
+    if (supabase) {
+      supabase.from("shipments").delete().eq("id", id).then(({ error }) => {
+        if (error) setSaveError(true);
+      });
+    }
   }
 
   function createShipment(details, opts = {}) {
