@@ -10,6 +10,12 @@ const REGIONS = [
   "Southeast Asia", "Middle East", "Latin America", "Sub-Saharan Africa", "South Asia",
 ];
 
+const HOW_IT_WORKS = [
+  [Package, "Create a label", "Enter sender, recipient, and service level — a tracking number is issued instantly."],
+  [ShieldCheck, "We handle transit & customs", "Your parcel moves through our carrier network and clears customs with our team's help."],
+  [CheckCircle2, "Delivered", "Tracked every step of the way, right up to the final delivery."],
+];
+
 const FAQS = [
   ["How long does delivery take?", "It depends on service level and destination. Standard shipments typically move in a little over a day domestically and longer internationally; Express moves faster. An estimated arrival shows up as soon as a label is created."],
   ["Do you handle customs clearance?", "Yes — international shipments pass through a dedicated Customs Clearance stage, handled by our compliance team so parcels don't get stuck at the border."],
@@ -366,44 +372,61 @@ export default function WaypointDemo() {
 
   const active = shipments.find((s) => s.id === activeId) || null;
 
-  // Load saved data from this browser's localStorage on mount. Data persists
-  // across visits on this device, but isn't shared across other devices/users
-  // — wire up a real backend (e.g. Supabase) here for that.
+  // Load real data from persistent storage on mount. This is shared across
+  // everyone who opens this site, so it behaves like a real database rather
+  // than per-browser memory. If a key doesn't exist yet (first-ever load),
+  // the catch just keeps the seed data, which then gets written on first save.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("waypoint-shipments");
-      if (raw) setShipments(JSON.parse(raw));
-    } catch (e) {
-      // nothing saved yet, or storage unavailable — keep seed data
-    }
-    try {
-      const raw = localStorage.getItem("waypoint-stages-config");
-      if (raw) {
-        const cfg = JSON.parse(raw);
-        if (cfg.stages) setStages(cfg.stages);
-        if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
+    let cancelled = false;
+    async function loadShipments() {
+      try {
+        const res = await window.storage.get("shipments", true);
+        if (res && !cancelled) setShipments(JSON.parse(res.value));
+      } catch (e) {
+        // no stored shipments yet — keep seed data
       }
-    } catch (e) {
-      // nothing saved yet, or storage unavailable — keep defaults
     }
-    setLoaded(true);
+    async function loadStageConfig() {
+      try {
+        const res = await window.storage.get("stages-config", true);
+        if (res && !cancelled) {
+          const cfg = JSON.parse(res.value);
+          if (cfg.stages) setStages(cfg.stages);
+          if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
+        }
+      } catch (e) {
+        // no stored stage config yet — keep defaults
+      }
+    }
+    async function load() {
+      // Run both reads in parallel rather than one after another, so the
+      // seed data gets replaced with real data as fast as possible.
+      await Promise.all([loadShipments(), loadStageConfig()]);
+      if (!cancelled) setLoaded(true);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist shipments to localStorage whenever they change (after initial load).
+  // Persist shipments to shared storage whenever they change (after initial load).
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem("waypoint-shipments", JSON.stringify(shipments));
+      window.storage?.set("shipments", JSON.stringify(shipments), true)?.catch(() => setSaveError(true));
     } catch (e) {
       setSaveError(true);
     }
   }, [shipments, loaded]);
 
-  // Persist stage config to localStorage whenever it changes (after initial load).
+  // Persist stage config to shared storage whenever it changes (after initial load).
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem("waypoint-stages-config", JSON.stringify({ stages, iconKeys: stageIconKeys }));
+      window.storage
+        ?.set("stages-config", JSON.stringify({ stages, iconKeys: stageIconKeys }), true)
+        ?.catch(() => setSaveError(true));
     } catch (e) {
       setSaveError(true);
     }
@@ -610,6 +633,16 @@ export default function WaypointDemo() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 8px; }
         ::-webkit-scrollbar-thumb:hover { background: #1D4ED8; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .chat-btn-pos { right: 1.5rem; bottom: 5.5rem; }
+        .chat-panel-pos { right: 1.5rem; bottom: 9.5rem; }
+        @media (min-width: 768px) {
+          .chat-btn-pos { bottom: 1.5rem; }
+          .chat-panel-pos { bottom: 5.5rem; }
+        }
       `}</style>
 
       {/* Header */}
@@ -621,7 +654,7 @@ export default function WaypointDemo() {
             </div>
             <span className="display text-2xl">Waypoint</span>
           </button>
-          <nav className="flex gap-1">
+          <nav className="hidden md:flex gap-1">
             {[
               ["home", "Home"],
               ["track", "Track"],
@@ -658,10 +691,56 @@ export default function WaypointDemo() {
               Admin
             </button>
           </nav>
+          {/* Mobile: compact status pill instead of full nav — real nav lives in the bottom tab bar */}
+          <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "#1D4ED811", color: "#1D4ED8" }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#16A34A" }} />
+            Live
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-5 py-10 relative">
+      {/* Mobile bottom tab bar — native-app style primary navigation on small screens */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch"
+        style={{ background: "#FFFFFFf5", backdropFilter: "blur(12px)", borderTop: "1px solid #E2E8F0", boxShadow: "0 -8px 24px rgba(15,23,42,0.06)" }}
+      >
+        {[
+          ["home", "Home", Building2],
+          ["track", "Track", MapPin],
+        ].map(([key, label, Icon]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
+            style={{ color: tab === key ? "#1D4ED8" : "#94A3B8" }}
+          >
+            <Icon size={19} strokeWidth={tab === key ? 2.4 : 2} />
+            <span className="text-[10px] font-medium">{label}</span>
+            {tab === key && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#1D4ED8" }} />}
+          </button>
+        ))}
+        <a
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
+          style={{ color: "#94A3B8" }}
+        >
+          <MessageCircle size={19} />
+          <span className="text-[10px] font-medium">Contact</span>
+        </a>
+        <button
+          onClick={() => setTab("admin")}
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
+          style={{ color: tab === "admin" ? "#1D4ED8" : "#94A3B8" }}
+        >
+          <Lock size={19} strokeWidth={tab === "admin" ? 2.4 : 2} />
+          <span className="text-[10px] font-medium">Admin</span>
+          {tab === "admin" && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#1D4ED8" }} />}
+        </button>
+      </nav>
+
+      <main className="max-w-5xl mx-auto px-5 py-10 pb-24 md:pb-10 relative">
         {/* ---------------- Home tab ---------------- */}
         {tab === "home" && (
           <div>
@@ -723,9 +802,12 @@ export default function WaypointDemo() {
             {/* Services */}
             <Reveal>
               <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
-                <h2 className="display text-2xl mb-6">What we do</h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-5 rounded-xl card-hover" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="display text-2xl">What we do</h2>
+                  <span className="md:hidden mono text-[10px]" style={{ color: "#94A3B8" }}>SWIPE →</span>
+                </div>
+                <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-5 px-5 no-scrollbar md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible">
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
                     <Warehouse size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Fulfillment & warehousing</h3>
                     <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
@@ -733,7 +815,7 @@ export default function WaypointDemo() {
                       the business, not running a warehouse.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
                     <ShieldCheck size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Customs & trade compliance</h3>
                     <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
@@ -741,7 +823,7 @@ export default function WaypointDemo() {
                       borders quickly instead of sitting in customs.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
                     <Globe size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Cross-border delivery</h3>
                     <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
@@ -749,7 +831,7 @@ export default function WaypointDemo() {
                       partner can get a parcel nearly anywhere.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
                     <Undo2 size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Returns management</h3>
                     <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
@@ -769,22 +851,41 @@ export default function WaypointDemo() {
                   Three steps from your door to theirs — track any of them in real time
                   the moment a label is created.
                 </p>
-                <div className="flex items-start flex-wrap gap-y-6">
-                  {[
-                    [Package, "Create a label", "Enter sender, recipient, and service level — a tracking number is issued instantly."],
-                    [ShieldCheck, "We handle transit & customs", "Your parcel moves through our carrier network and clears customs with our team's help."],
-                    [CheckCircle2, "Delivered", "Tracked every step of the way, right up to the final delivery."],
-                  ].map(([Icon, title, desc], i, arr) => (
-                  <div key={title} className="flex items-start" style={{ minWidth: 0 }}>
-                    <div className="flex flex-col items-start w-40 md:w-48">
-                      <StepGraphic icon={Icon} isLast={i === arr.length - 1} />
-                      <h3 className="text-sm font-semibold mt-3">{title}</h3>
-                      <p className="text-xs mt-1 leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+
+                {/* Mobile: vertical timeline */}
+                <div className="md:hidden space-y-0">
+                  {HOW_IT_WORKS.map(([Icon, title, desc], i, arr) => (
+                    <div key={title} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: "#1D4ED822", border: "1px solid #1D4ED855" }}
+                        >
+                          <Icon size={16} style={{ color: "#1D4ED8" }} />
+                        </div>
+                        {i < arr.length - 1 && <div className="w-px flex-1 min-h-[28px]" style={{ background: "#E2E8F0" }} />}
+                      </div>
+                      <div className="pb-6">
+                        <h3 className="text-sm font-semibold pt-2">{title}</h3>
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+
+                {/* Desktop: horizontal steps */}
+                <div className="hidden md:flex items-start flex-wrap gap-y-6">
+                  {HOW_IT_WORKS.map(([Icon, title, desc], i, arr) => (
+                    <div key={title} className="flex items-start" style={{ minWidth: 0 }}>
+                      <div className="flex flex-col items-start w-48">
+                        <StepGraphic icon={Icon} isLast={i === arr.length - 1} />
+                        <h3 className="text-sm font-semibold mt-3">{title}</h3>
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </Reveal>
 
             {/* Why choose us */}
@@ -1204,7 +1305,7 @@ export default function WaypointDemo() {
 
             {showAdminForm && (
               <div
-                className="grid grid-cols-2 gap-3 p-4 rounded-lg mb-6"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg mb-6"
                 style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}
               >
                 <input
@@ -1266,7 +1367,7 @@ export default function WaypointDemo() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       value={s.sender}
                       onChange={(e) => updateShipment(s.id, { sender: e.target.value })}
@@ -1526,11 +1627,10 @@ export default function WaypointDemo() {
       {/* Floating AI chat */}
       {chatOpen && (
         <div
-          className="fixed z-50 flex flex-col rounded-2xl overflow-hidden reveal reveal-visible"
+          className="fixed z-50 flex flex-col rounded-2xl overflow-hidden reveal reveal-visible chat-panel-pos"
           style={{
-            bottom: "5.5rem", right: "1.5rem",
             width: "min(22rem, calc(100vw - 2rem))",
-            height: "min(32rem, calc(100vh - 8rem))",
+            height: "min(32rem, calc(100vh - 10rem))",
             background: "#FFFFFFee", border: "1px solid #E2E8F0",
             backdropFilter: "blur(12px)",
             boxShadow: "0 24px 48px rgba(15,23,42,0.18), 0 0 0 1px #1D4ED822",
@@ -1598,8 +1698,8 @@ export default function WaypointDemo() {
 
       <button
         onClick={() => setChatOpen((v) => !v)}
-        className={`fixed z-50 rounded-full flex items-center justify-center shadow-lg hover:brightness-110 hover:scale-105 transition-transform ${!chatOpen ? "pulse-ring" : ""}`}
-        style={{ bottom: "1.5rem", right: "1.5rem", width: "3.25rem", height: "3.25rem", background: "#1D4ED8", color: "#F7F9FC" }}
+        className={`fixed z-50 rounded-full flex items-center justify-center shadow-lg hover:brightness-110 hover:scale-105 transition-transform chat-btn-pos ${!chatOpen ? "pulse-ring" : ""}`}
+        style={{ width: "3.25rem", height: "3.25rem", background: "#1D4ED8", color: "#F7F9FC" }}
         title="Chat with the Waypoint Assistant"
       >
         {chatOpen ? <X size={20} /> : <MessageCircle size={20} />}
