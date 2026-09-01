@@ -13,6 +13,7 @@ create table if not exists shipments (
   eta text,
   eta_timestamp bigint,
   stage_times jsonb not null default '{}'::jsonb,
+  stage_labels jsonb not null default '{}'::jsonb,
   auto boolean not null default true
 );
 
