@@ -129,7 +129,7 @@ const SEED_SHIPMENTS = [
 
 function StageBadge({ stage, stages, icons }) {
   const Icon = icons[stage] || Circle;
-  const color = stage === stages.length - 1 ? "#16A34A" : "#1D4ED8";
+  const color = stage === stages.length - 1 ? "#16A34A" : "#E11D2E";
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -144,14 +144,14 @@ function RouteVisual({ stage, stages }) {
   const pct = (stage / (stages.length - 1)) * 100;
   return (
     <div className="w-full py-4">
-      <div className="flex justify-between text-[11px] mono mb-2" style={{ color: "#64748B" }}>
+      <div className="flex justify-between text-[11px] mono mb-2" style={{ color: "#A3A3A3" }}>
         <span>ORIGIN</span>
         <span>DESTINATION</span>
       </div>
-      <div className="relative h-1.5 rounded-full" style={{ background: "#E2E8F033" }}>
+      <div className="relative h-1.5 rounded-full" style={{ background: "#2A2A2A33" }}>
         <div
           className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-          style={{ width: `${pct}%`, background: "#1D4ED8" }}
+          style={{ width: `${pct}%`, background: "#E11D2E" }}
         />
         <div
           className="absolute -top-2.5 transition-all duration-700"
@@ -159,9 +159,9 @@ function RouteVisual({ stage, stages }) {
         >
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center ${stage < stages.length - 1 ? "pulse-ring" : ""}`}
-            style={{ background: "#1D4ED8", boxShadow: "0 0 0 4px #1D4ED822" }}
+            style={{ background: "#E11D2E", boxShadow: "0 0 0 4px #E11D2E22" }}
           >
-            <Truck size={13} color="#F7F9FC" />
+            <Truck size={13} color="#FFFFFF" />
           </div>
         </div>
       </div>
@@ -184,21 +184,21 @@ function Timeline({ stage, createdAt, stages, icons, stageTimes }) {
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
                 style={{
-                  background: done ? "#1D4ED8" : "#E2E8F033",
-                  color: done ? "#F7F9FC" : "#94A3B8",
+                  background: done ? "#E11D2E" : "#2A2A2A33",
+                  color: done ? "#0A0A0A" : "#6B6B6B",
                 }}
               >
                 <Icon size={14} />
               </div>
               {!isLast && (
-                <div className="w-0.5 flex-1 min-h-[26px]" style={{ background: i < stage ? "#1D4ED8" : "#E2E8F033" }} />
+                <div className="w-0.5 flex-1 min-h-[26px]" style={{ background: i < stage ? "#E11D2E" : "#2A2A2A33" }} />
               )}
             </div>
             <div className="pb-6">
-              <p className="text-sm font-semibold" style={{ color: done ? "#0F172A" : "#94A3B8" }}>
+              <p className="text-sm font-semibold" style={{ color: done ? "#FFFFFF" : "#6B6B6B" }}>
                 {label}
               </p>
-              <p className="text-xs mono mt-0.5" style={{ color: "#94A3B8" }}>
+              <p className="text-xs mono mt-0.5" style={{ color: "#6B6B6B" }}>
                 {timeLabel}
               </p>
             </div>
@@ -233,10 +233,10 @@ function GlobeGraphic() {
         <line x1="120" y1="22" x2="120" y2="218" stroke="#CBD5E1" strokeWidth="1" />
       </g>
       {links.map((d, i) => (
-        <path key={i} d={d} stroke="#1D4ED8" strokeWidth="1.5" strokeDasharray="4 4" fill="none" opacity="0.55" />
+        <path key={i} d={d} stroke="#E11D2E" strokeWidth="1.5" strokeDasharray="4 4" fill="none" opacity="0.55" />
       ))}
       {hubs.map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r={i === 5 ? 6 : 4.5} fill="#1D4ED8" opacity={i === 5 ? 1 : 0.9} className={i === 5 ? "pulse-dot" : ""} />
+        <circle key={i} cx={x} cy={y} r={i === 5 ? 6 : 4.5} fill="#E11D2E" opacity={i === 5 ? 1 : 0.9} className={i === 5 ? "pulse-dot" : ""} />
       ))}
     </svg>
   );
@@ -247,11 +247,11 @@ function StepGraphic({ icon: Icon, isLast }) {
     <div className="flex items-center">
       <div
         className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: "#1D4ED822", border: "1px solid #1D4ED855" }}
+        style={{ background: "#E11D2E22", border: "1px solid #E11D2E55" }}
       >
-        <Icon size={18} style={{ color: "#1D4ED8" }} />
+        <Icon size={18} style={{ color: "#E11D2E" }} />
       </div>
-      {!isLast && <div className="w-8 md:w-16 h-px mx-2" style={{ background: "#E2E8F0" }} />}
+      {!isLast && <div className="w-8 md:w-16 h-px mx-2" style={{ background: "#2A2A2A" }} />}
     </div>
   );
 }
@@ -584,25 +584,25 @@ export default function WaypointDemo() {
   }
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#F7F9FC", color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen w-full" style={{ background: "#0A0A0A", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
         .display { font-family: 'Oswald', sans-serif; letter-spacing: 0.01em; text-transform: uppercase; }
         .mono { font-family: 'IBM Plex Mono', monospace; }
 
         .gradient-text {
-          background: linear-gradient(135deg, #0F172A 0%, #334155 45%, #1D4ED8 100%);
+          background: linear-gradient(135deg, #141414 0%, #D4D4D4 45%, #E11D2E 100%);
           -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
         .card-hover { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(29,78,216,0.16); border-color: #1D4ED877; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(225,29,46,0.16); border-color: #E11D2E77; }
 
         .btn-glow { transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
-        .btn-glow:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px rgba(29,78,216,0.2), 0 10px 24px rgba(29,78,216,0.35); filter: brightness(1.05); }
+        .btn-glow:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px rgba(225,29,46,0.2), 0 10px 24px rgba(225,29,46,0.35); filter: brightness(1.05); }
 
         .chip-hover { transition: transform .2s ease, border-color .2s ease, background .2s ease; }
-        .chip-hover:hover { transform: translateY(-2px); border-color: #1D4ED888; background: #EFF6FFff; }
+        .chip-hover:hover { transform: translateY(-2px); border-color: #E11D2E88; background: #1F1F1Fff; }
 
         @keyframes floatBlob {
           0%, 100% { transform: translate(0, 0) scale(1); }
@@ -611,9 +611,9 @@ export default function WaypointDemo() {
         .blob { position: absolute; border-radius: 9999px; filter: blur(90px); pointer-events: none; animation: floatBlob 12s ease-in-out infinite; }
 
         @keyframes pulseRing {
-          0% { box-shadow: 0 0 0 0 rgba(29,78,216,0.45); }
-          70% { box-shadow: 0 0 0 14px rgba(29,78,216,0); }
-          100% { box-shadow: 0 0 0 0 rgba(29,78,216,0); }
+          0% { box-shadow: 0 0 0 0 rgba(225,29,46,0.45); }
+          70% { box-shadow: 0 0 0 14px rgba(225,29,46,0); }
+          100% { box-shadow: 0 0 0 0 rgba(225,29,46,0); }
         }
         .pulse-ring { animation: pulseRing 2.5s ease-out infinite; }
 
@@ -631,8 +631,8 @@ export default function WaypointDemo() {
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 8px; }
-        ::-webkit-scrollbar-thumb:hover { background: #1D4ED8; }
+        ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E11D2E; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -646,11 +646,11 @@ export default function WaypointDemo() {
       `}</style>
 
       {/* Header */}
-      <header className="border-b sticky top-0 z-20" style={{ borderColor: "#E2E8F066", background: "#F7F9FCee", backdropFilter: "blur(6px)" }}>
+      <header className="border-b sticky top-0 z-20" style={{ borderColor: "#2A2A2A66", background: "#0A0A0Aee", backdropFilter: "blur(6px)" }}>
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <button onClick={() => setTab("home")} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded flex items-center justify-center" style={{ background: "#1D4ED8" }}>
-              <Truck size={17} color="#F7F9FC" />
+            <div className="w-8 h-8 rounded flex items-center justify-center" style={{ background: "#E11D2E" }}>
+              <Truck size={17} color="#FFFFFF" />
             </div>
             <span className="display text-2xl">Waypoint</span>
           </button>
@@ -664,8 +664,8 @@ export default function WaypointDemo() {
                 onClick={() => setTab(key)}
                 className="px-3.5 py-2 rounded-md text-sm font-medium transition-all hover:-translate-y-0.5"
                 style={{
-                  background: tab === key ? "#1D4ED8" : "transparent",
-                  color: tab === key ? "#F7F9FC" : "#334155",
+                  background: tab === key ? "#E11D2E" : "transparent",
+                  color: tab === key ? "#0A0A0A" : "#D4D4D4",
                 }}
               >
                 {label}
@@ -676,7 +676,7 @@ export default function WaypointDemo() {
               target="_blank"
               rel="noopener noreferrer"
               className="px-3.5 py-2 rounded-md text-sm font-medium transition-all hover:-translate-y-0.5"
-              style={{ color: "#334155" }}
+              style={{ color: "#D4D4D4" }}
             >
               Contact
             </a>
@@ -684,15 +684,15 @@ export default function WaypointDemo() {
               onClick={() => setTab("admin")}
               className="px-3.5 py-2 rounded-md text-sm font-medium transition-all hover:-translate-y-0.5"
               style={{
-                background: tab === "admin" ? "#1D4ED8" : "transparent",
-                color: tab === "admin" ? "#F7F9FC" : "#334155",
+                background: tab === "admin" ? "#E11D2E" : "transparent",
+                color: tab === "admin" ? "#0A0A0A" : "#D4D4D4",
               }}
             >
               Admin
             </button>
           </nav>
           {/* Mobile: compact status pill instead of full nav — real nav lives in the bottom tab bar */}
-          <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "#1D4ED811", color: "#1D4ED8" }}>
+          <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "#E11D2E11", color: "#E11D2E" }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#16A34A" }} />
             Live
           </div>
@@ -702,7 +702,7 @@ export default function WaypointDemo() {
       {/* Mobile bottom tab bar — native-app style primary navigation on small screens */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch"
-        style={{ background: "#FFFFFFf5", backdropFilter: "blur(12px)", borderTop: "1px solid #E2E8F0", boxShadow: "0 -8px 24px rgba(15,23,42,0.06)" }}
+        style={{ background: "#141414f5", backdropFilter: "blur(12px)", borderTop: "1px solid #2A2A2A", boxShadow: "0 -8px 24px rgba(0,0,0,0.5)" }}
       >
         {[
           ["home", "Home", Building2],
@@ -712,11 +712,11 @@ export default function WaypointDemo() {
             key={key}
             onClick={() => setTab(key)}
             className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
-            style={{ color: tab === key ? "#1D4ED8" : "#94A3B8" }}
+            style={{ color: tab === key ? "#E11D2E" : "#6B6B6B" }}
           >
             <Icon size={19} strokeWidth={tab === key ? 2.4 : 2} />
             <span className="text-[10px] font-medium">{label}</span>
-            {tab === key && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#1D4ED8" }} />}
+            {tab === key && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#E11D2E" }} />}
           </button>
         ))}
         <a
@@ -724,7 +724,7 @@ export default function WaypointDemo() {
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
-          style={{ color: "#94A3B8" }}
+          style={{ color: "#6B6B6B" }}
         >
           <MessageCircle size={19} />
           <span className="text-[10px] font-medium">Contact</span>
@@ -732,11 +732,11 @@ export default function WaypointDemo() {
         <button
           onClick={() => setTab("admin")}
           className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
-          style={{ color: tab === "admin" ? "#1D4ED8" : "#94A3B8" }}
+          style={{ color: tab === "admin" ? "#E11D2E" : "#6B6B6B" }}
         >
           <Lock size={19} strokeWidth={tab === "admin" ? 2.4 : 2} />
           <span className="text-[10px] font-medium">Admin</span>
-          {tab === "admin" && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#1D4ED8" }} />}
+          {tab === "admin" && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#E11D2E" }} />}
         </button>
       </nav>
 
@@ -745,22 +745,22 @@ export default function WaypointDemo() {
         {tab === "home" && (
           <div>
             {/* Hero */}
-            <section className="relative grid md:grid-cols-2 gap-8 items-center py-10 md:py-16 border-b overflow-hidden" style={{ borderColor: "#E2E8F066" }}>
-              <div className="blob" style={{ width: 340, height: 340, top: -80, left: -120, background: "#1D4ED8", opacity: 0.08 }} />
-              <div className="blob" style={{ width: 280, height: 280, bottom: -100, right: -80, background: "#16A34A", animationDelay: "3s", opacity: 0.06 }} />
+            <section className="relative grid md:grid-cols-2 gap-8 items-center py-10 md:py-16 border-b overflow-hidden" style={{ borderColor: "#2A2A2A66" }}>
+              <div className="blob" style={{ width: 340, height: 340, top: -80, left: -120, background: "#E11D2E", opacity: 0.18 }} />
+              <div className="blob" style={{ width: 280, height: 280, bottom: -100, right: -80, background: "#16A34A", animationDelay: "3s", opacity: 0.12 }} />
               <div className="relative">
-                <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#1D4ED8" }}>
+                <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#E11D2E" }}>
                   Global parcel delivery
                 </p>
                 <h1 className="display text-5xl md:text-6xl leading-[0.95] max-w-xl gradient-text">
                   Open your world to every doorstep.
                 </h1>
-                <p className="mt-5 max-w-xl text-sm leading-relaxed" style={{ color: "#334155" }}>
+                <p className="mt-5 max-w-xl text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
                   Waypoint moves parcels across borders and across town —
                   pairing a trusted carrier network with customs expertise, so your
                   shipments clear faster and arrive on time.
                 </p>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "#64748B" }}>
+                <p className="mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "#A3A3A3" }}>
                   From the first scan at pickup to the final knock on the door, every
                   parcel is tracked end to end — so you and your customers always know
                   exactly where things stand.
@@ -769,7 +769,7 @@ export default function WaypointDemo() {
                   <button
                     onClick={() => setTab("track")}
                     className="btn-glow flex items-center gap-1.5 px-5 py-3 rounded-lg text-sm font-semibold"
-                    style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                    style={{ background: "#E11D2E", color: "#FFFFFF" }}
                   >
                     Track a shipment <ArrowRight size={15} />
                   </button>
@@ -782,7 +782,7 @@ export default function WaypointDemo() {
 
             {/* Trust stats */}
             <Reveal>
-              <section className="grid grid-cols-2 md:grid-cols-4 gap-6 py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="grid grid-cols-2 md:grid-cols-4 gap-6 py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 {[
                   [500, "+", "Businesses shipping with us"],
                   [60, "+", "Carrier & customs partners"],
@@ -790,10 +790,10 @@ export default function WaypointDemo() {
                   [6, "", "Continents reached"],
                 ].map(([num, suffix, label]) => (
                   <div key={label}>
-                    <p className="display text-3xl" style={{ color: "#1D4ED8" }}>
+                    <p className="display text-3xl" style={{ color: "#E11D2E" }}>
                       <Counter value={num} suffix={suffix} />
                     </p>
-                    <p className="text-xs mt-1" style={{ color: "#64748B" }}>{label}</p>
+                    <p className="text-xs mt-1" style={{ color: "#A3A3A3" }}>{label}</p>
                   </div>
                 ))}
               </section>
@@ -801,40 +801,40 @@ export default function WaypointDemo() {
 
             {/* Services */}
             <Reveal>
-              <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="display text-2xl">What we do</h2>
-                  <span className="md:hidden mono text-[10px]" style={{ color: "#94A3B8" }}>SWIPE →</span>
+                  <span className="md:hidden mono text-[10px]" style={{ color: "#6B6B6B" }}>SWIPE →</span>
                 </div>
                 <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-5 px-5 no-scrollbar md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible">
-                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                    <Warehouse size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                    <Warehouse size={20} style={{ color: "#E11D2E" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Fulfillment & warehousing</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
+                    <p className="text-xs leading-relaxed" style={{ color: "#A3A3A3" }}>
                       Hand off storage and pick-and-pack so you can focus on growing
                       the business, not running a warehouse.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                    <ShieldCheck size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                    <ShieldCheck size={20} style={{ color: "#E11D2E" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Customs & trade compliance</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
+                    <p className="text-xs leading-relaxed" style={{ color: "#A3A3A3" }}>
                       Our compliance team handles the paperwork so parcels clear
                       borders quickly instead of sitting in customs.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                    <Globe size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                    <Globe size={20} style={{ color: "#E11D2E" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Cross-border delivery</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
+                    <p className="text-xs leading-relaxed" style={{ color: "#A3A3A3" }}>
                       A carrier network spanning multiple continents means one
                       partner can get a parcel nearly anywhere.
                     </p>
                   </div>
-                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                    <Undo2 size={20} style={{ color: "#1D4ED8" }} className="mb-3" />
+                  <div className="p-5 rounded-xl card-hover shrink-0 w-64 snap-center md:w-auto" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                    <Undo2 size={20} style={{ color: "#E11D2E" }} className="mb-3" />
                     <h3 className="font-semibold text-sm mb-1.5">Returns management</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>
+                    <p className="text-xs leading-relaxed" style={{ color: "#A3A3A3" }}>
                       Return labels and reverse logistics, handled with the same care
                       as the outbound shipment.
                     </p>
@@ -845,9 +845,9 @@ export default function WaypointDemo() {
 
             {/* How it works */}
             <Reveal>
-              <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <h2 className="display text-2xl mb-2">How it works</h2>
-                <p className="text-sm mb-6 max-w-xl" style={{ color: "#64748B" }}>
+                <p className="text-sm mb-6 max-w-xl" style={{ color: "#A3A3A3" }}>
                   Three steps from your door to theirs — track any of them in real time
                   the moment a label is created.
                 </p>
@@ -859,15 +859,15 @@ export default function WaypointDemo() {
                       <div className="flex flex-col items-center">
                         <div
                           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                          style={{ background: "#1D4ED822", border: "1px solid #1D4ED855" }}
+                          style={{ background: "#E11D2E22", border: "1px solid #E11D2E55" }}
                         >
-                          <Icon size={16} style={{ color: "#1D4ED8" }} />
+                          <Icon size={16} style={{ color: "#E11D2E" }} />
                         </div>
-                        {i < arr.length - 1 && <div className="w-px flex-1 min-h-[28px]" style={{ background: "#E2E8F0" }} />}
+                        {i < arr.length - 1 && <div className="w-px flex-1 min-h-[28px]" style={{ background: "#2A2A2A" }} />}
                       </div>
                       <div className="pb-6">
                         <h3 className="text-sm font-semibold pt-2">{title}</h3>
-                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#A3A3A3" }}>{desc}</p>
                       </div>
                     </div>
                   ))}
@@ -880,7 +880,7 @@ export default function WaypointDemo() {
                       <div className="flex flex-col items-start w-48">
                         <StepGraphic icon={Icon} isLast={i === arr.length - 1} />
                         <h3 className="text-sm font-semibold mt-3">{title}</h3>
-                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#A3A3A3" }}>{desc}</p>
                       </div>
                     </div>
                   ))}
@@ -890,7 +890,7 @@ export default function WaypointDemo() {
 
             {/* Why choose us */}
             <Reveal>
-              <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <h2 className="display text-2xl mb-6">Why businesses ship with us</h2>
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
                   {[
@@ -902,8 +902,8 @@ export default function WaypointDemo() {
                     "Fulfillment options so you don't have to run your own warehouse",
                   ].map((point) => (
                     <div key={point} className="flex items-start gap-2.5">
-                      <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: "#1D4ED8" }} />
-                      <p className="text-sm" style={{ color: "#334155" }}>{point}</p>
+                      <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: "#E11D2E" }} />
+                      <p className="text-sm" style={{ color: "#D4D4D4" }}>{point}</p>
                     </div>
                   ))}
                 </div>
@@ -912,13 +912,13 @@ export default function WaypointDemo() {
 
             {/* Platform showcase */}
             <Reveal>
-              <section className="grid md:grid-cols-2 gap-8 items-center py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="grid md:grid-cols-2 gap-8 items-center py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <div>
-                  <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#1D4ED8" }}>
+                  <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#E11D2E" }}>
                     The platform
                   </p>
                   <h2 className="display text-3xl mb-4">See exactly where every parcel is</h2>
-                  <p className="text-sm leading-relaxed mb-5" style={{ color: "#334155" }}>
+                  <p className="text-sm leading-relaxed mb-5" style={{ color: "#D4D4D4" }}>
                     Waypoint Pulse gives you and your customers one real-time view of
                     every shipment — from the moment a label is created to the knock on
                     the door.
@@ -931,22 +931,22 @@ export default function WaypointDemo() {
                       [ListChecks, "Exportable shipment reports"],
                     ].map(([Icon, label]) => (
                       <div key={label} className="flex items-center gap-2.5">
-                        <Icon size={15} style={{ color: "#1D4ED8" }} className="shrink-0" />
-                        <p className="text-sm" style={{ color: "#334155" }}>{label}</p>
+                        <Icon size={15} style={{ color: "#E11D2E" }} className="shrink-0" />
+                        <p className="text-sm" style={{ color: "#D4D4D4" }}>{label}</p>
                       </div>
                     ))}
                   </div>
                   <button
                     onClick={() => setTab("track")}
                     className="btn-glow flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-lg"
-                    style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                    style={{ background: "#E11D2E", color: "#FFFFFF" }}
                   >
                     Try live tracking <ArrowRight size={15} />
                   </button>
                 </div>
 
-                <div className="card-hover rounded-2xl p-6" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                  <p className="mono text-xs" style={{ color: "#64748B" }}>TRACKING NUMBER</p>
+                <div className="card-hover rounded-2xl p-6" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                  <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
                   <p className="display text-xl mt-0.5 mb-3">WPT-284719055N2</p>
                   <StageBadge
                     stage={Math.min(2, stages.length - 1)}
@@ -954,16 +954,16 @@ export default function WaypointDemo() {
                     icons={stageIcons}
                   />
                   <RouteVisual stage={Math.min(2, stages.length - 1)} stages={stages} />
-                  <p className="text-xs" style={{ color: "#64748B" }}>Sample preview — try it yourself on the Track tab.</p>
+                  <p className="text-xs" style={{ color: "#A3A3A3" }}>Sample preview — try it yourself on the Track tab.</p>
                 </div>
               </section>
             </Reveal>
 
             {/* Destinations */}
             <Reveal>
-              <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <h2 className="display text-2xl mb-2">Where we deliver</h2>
-                <p className="text-sm mb-6 max-w-xl" style={{ color: "#64748B" }}>
+                <p className="text-sm mb-6 max-w-xl" style={{ color: "#A3A3A3" }}>
                   80+ destinations across six continents, with new lanes added every
                   quarter.
                 </p>
@@ -972,9 +972,9 @@ export default function WaypointDemo() {
                     <span
                       key={region}
                       className="chip-hover flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
-                      style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", color: "#334155" }}
+                      style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#D4D4D4" }}
                     >
-                      <MapPin size={12} style={{ color: "#1D4ED8" }} /> {region}
+                      <MapPin size={12} style={{ color: "#E11D2E" }} /> {region}
                     </span>
                   ))}
                 </div>
@@ -983,42 +983,42 @@ export default function WaypointDemo() {
 
             {/* Our story */}
             <Reveal>
-              <section className="grid md:grid-cols-2 gap-8 items-center py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="grid md:grid-cols-2 gap-8 items-center py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <div>
-                  <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#1D4ED8" }}>
+                  <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#E11D2E" }}>
                     Our story
                   </p>
                   <h2 className="display text-3xl mb-4">Built for ambitious shipments</h2>
-                  <p className="text-sm leading-relaxed mb-3" style={{ color: "#334155" }}>
+                  <p className="text-sm leading-relaxed mb-3" style={{ color: "#D4D4D4" }}>
                     Waypoint started in 2005 with a simple idea: moving a parcel
                     across a border shouldn't be any harder than moving it across town.
                   </p>
-                  <p className="text-sm leading-relaxed" style={{ color: "#64748B" }}>
+                  <p className="text-sm leading-relaxed" style={{ color: "#A3A3A3" }}>
                     Two decades later, that's still the job — pairing a carrier network
                     with people who actually know your shipments, so growing businesses
                     can expand internationally without the shipping logistics slowing
                     them down.
                   </p>
                 </div>
-                <div className="card-hover rounded-2xl p-6" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
-                  <p className="text-sm italic leading-relaxed" style={{ color: "#334155" }}>
+                <div className="card-hover rounded-2xl p-6" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+                  <p className="text-sm italic leading-relaxed" style={{ color: "#D4D4D4" }}>
                     "The best logistics partner is the one you stop thinking about —
                     because things just arrive."
                   </p>
-                  <p className="mono text-xs mt-3" style={{ color: "#64748B" }}>— Waypoint Ops Team</p>
+                  <p className="mono text-xs mt-3" style={{ color: "#A3A3A3" }}>— Waypoint Ops Team</p>
                 </div>
               </section>
             </Reveal>
 
             {/* FAQ */}
             <Reveal>
-              <section className="py-10 border-b" style={{ borderColor: "#E2E8F066" }}>
+              <section className="py-10 border-b" style={{ borderColor: "#2A2A2A66" }}>
                 <h2 className="display text-2xl mb-6">Frequently asked questions</h2>
                 <div className="space-y-2">
                   {FAQS.map(([q, a], i) => {
                     const open = openFaq === i;
                     return (
-                      <div key={q} className="rounded-lg overflow-hidden transition-colors" style={{ background: "#FFFFFF", border: open ? "1px solid #1D4ED888" : "1px solid #E2E8F0" }}>
+                      <div key={q} className="rounded-lg overflow-hidden transition-colors" style={{ background: "#141414", border: open ? "1px solid #E11D2E88" : "1px solid #2A2A2A" }}>
                         <button
                           onClick={() => setOpenFaq(open ? null : i)}
                           className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
@@ -1027,14 +1027,14 @@ export default function WaypointDemo() {
                           <ChevronDown
                             size={16}
                             className="shrink-0 transition-transform duration-300"
-                            style={{ color: open ? "#1D4ED8" : "#64748B", transform: open ? "rotate(180deg)" : "none" }}
+                            style={{ color: open ? "#E11D2E" : "#A3A3A3", transform: open ? "rotate(180deg)" : "none" }}
                           />
                         </button>
                         <div
                           className="transition-all duration-300 overflow-hidden"
                           style={{ maxHeight: open ? "200px" : "0px" }}
                         >
-                          <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: "#64748B" }}>{a}</p>
+                          <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: "#A3A3A3" }}>{a}</p>
                         </div>
                       </div>
                     );
@@ -1047,12 +1047,12 @@ export default function WaypointDemo() {
             <Reveal>
               <section
                 className="relative overflow-hidden py-10 px-6 my-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-                style={{ background: "linear-gradient(120deg, #FFFFFF 0%, #EFF6FF 100%)", border: "1px solid #E2E8F0" }}
+                style={{ background: "linear-gradient(120deg, #141414 0%, #1F1010 100%)", border: "1px solid #2A2A2A" }}
               >
-                <div className="blob" style={{ width: 220, height: 220, top: -60, right: -40, background: "#1D4ED8", opacity: 0.06 }} />
+                <div className="blob" style={{ width: 220, height: 220, top: -60, right: -40, background: "#E11D2E", opacity: 0.15 }} />
                 <div className="relative">
                   <h2 className="display text-2xl">Have a tracking number?</h2>
-                  <p className="text-sm mt-1" style={{ color: "#64748B" }}>
+                  <p className="text-sm mt-1" style={{ color: "#A3A3A3" }}>
                     Check the status of a shipment already on its way.
                   </p>
                 </div>
@@ -1060,7 +1060,7 @@ export default function WaypointDemo() {
                   <button
                     onClick={() => setTab("track")}
                     className="btn-glow flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold"
-                    style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                    style={{ background: "#E11D2E", color: "#FFFFFF" }}
                   >
                     Track a shipment <ArrowRight size={15} />
                   </button>
@@ -1075,28 +1075,28 @@ export default function WaypointDemo() {
           <div>
             <div className="flex gap-2 mb-8">
               <div className="relative flex-1">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94A3B8" }} />
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#6B6B6B" }} />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleTrack()}
                   placeholder={`Enter tracking number, e.g. ${active?.id || "WPT-188141953N1"}`}
                   className="w-full pl-10 pr-4 py-3 rounded-lg text-sm mono outline-none"
-                  style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
               </div>
               <button
                 type="button"
                 onClick={handleTrack}
                 className="btn-glow px-5 py-3 rounded-lg text-sm font-semibold"
-                style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                style={{ background: "#E11D2E", color: "#FFFFFF" }}
               >
                 Track
               </button>
             </div>
 
             {!active && (
-              <p className="text-sm" style={{ color: "#64748B" }}>
+              <p className="text-sm" style={{ color: "#A3A3A3" }}>
                 {searched
                   ? "No shipment found for that tracking number."
                   : "Enter a tracking number above to see its delivery status."}
@@ -1104,7 +1104,7 @@ export default function WaypointDemo() {
             )}
 
             {active && (
-              <div className="reveal reveal-visible rounded-2xl p-6" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", boxShadow: "0 20px 40px rgba(15,23,42,0.08)" }}>
+              <div className="reveal reveal-visible rounded-2xl p-6" style={{ background: "#141414", border: "1px solid #2A2A2A", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}>
                 {justCreated === active.id && (
                   <div
                     className="mb-5 px-3 py-2 rounded-md text-xs font-medium flex items-center gap-2"
@@ -1115,7 +1115,7 @@ export default function WaypointDemo() {
                 )}
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="mono text-xs" style={{ color: "#64748B" }}>TRACKING NUMBER</p>
+                    <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
                     <p className="display text-2xl mt-0.5">{active.id}</p>
                   </div>
                   <StageBadge stage={active.stage} stages={stages} icons={stageIcons} />
@@ -1123,20 +1123,20 @@ export default function WaypointDemo() {
 
                 <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
                   <div>
-                    <p className="text-xs" style={{ color: "#64748B" }}>From</p>
+                    <p className="text-xs" style={{ color: "#A3A3A3" }}>From</p>
                     <p className="font-medium">{active.sender}</p>
-                    <p style={{ color: "#64748B" }}>{active.origin}</p>
+                    <p style={{ color: "#A3A3A3" }}>{active.origin}</p>
                   </div>
                   <div>
-                    <p className="text-xs" style={{ color: "#64748B" }}>To</p>
+                    <p className="text-xs" style={{ color: "#A3A3A3" }}>To</p>
                     <p className="font-medium">{active.recipient}</p>
-                    <p style={{ color: "#64748B" }}>{active.dest}</p>
+                    <p style={{ color: "#A3A3A3" }}>{active.dest}</p>
                   </div>
                 </div>
 
                 <RouteVisual stage={active.stage} stages={stages} />
 
-                <div className="flex items-center gap-1.5 text-sm mt-2" style={{ color: "#334155" }}>
+                <div className="flex items-center gap-1.5 text-sm mt-2" style={{ color: "#D4D4D4" }}>
                   <Clock size={14} />
                   {active.stage >= stages.length - 1 ? "Delivered" : <>Estimated arrival <span className="mono">{active.eta}</span></>}
                   <span className="mx-1">·</span>
@@ -1153,41 +1153,41 @@ export default function WaypointDemo() {
         {tab === "admin" && !isAdminAuthed && (
           <div className="max-w-sm mx-auto mt-10">
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3" style={{ background: "#E2E8F033" }}>
-                <Lock size={18} style={{ color: "#1D4ED8" }} />
+              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3" style={{ background: "#2A2A2A33" }}>
+                <Lock size={18} style={{ color: "#E11D2E" }} />
               </div>
               <h2 className="display text-2xl">Admin login</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs mono block mb-1" style={{ color: "#64748B" }}>USERNAME</label>
+                <label className="text-xs mono block mb-1" style={{ color: "#A3A3A3" }}>USERNAME</label>
                 <input
                   value={loginForm.username}
                   onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
                   className="w-full px-3 py-2.5 rounded-md text-sm outline-none"
-                  style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
               </div>
               <div>
-                <label className="text-xs mono block mb-1" style={{ color: "#64748B" }}>PASSWORD</label>
+                <label className="text-xs mono block mb-1" style={{ color: "#A3A3A3" }}>PASSWORD</label>
                 <input
                   type="password"
                   value={loginForm.password}
                   onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
                   className="w-full px-3 py-2.5 rounded-md text-sm outline-none"
-                  style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
               </div>
               {loginError && (
-                <p className="text-xs" style={{ color: "#DC2626" }}>{loginError}</p>
+                <p className="text-xs" style={{ color: "#F97316" }}>{loginError}</p>
               )}
               <button
                 type="button"
                 onClick={handleAdminLogin}
                 className="w-full py-2.5 rounded-md font-semibold text-sm mt-1"
-                style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                style={{ background: "#E11D2E", color: "#FFFFFF" }}
               >
                 Log in
               </button>
@@ -1199,21 +1199,21 @@ export default function WaypointDemo() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <Settings size={20} style={{ color: "#1D4ED8" }} />
+                <Settings size={20} style={{ color: "#E11D2E" }} />
                 <h2 className="display text-3xl">Admin</h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowAdminForm((v) => !v)}
                   className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-md"
-                  style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                  style={{ background: "#E11D2E", color: "#FFFFFF" }}
                 >
                   <Plus size={15} /> New shipment
                 </button>
                 <button
                   onClick={() => setIsAdminAuthed(false)}
                   className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-md"
-                  style={{ background: "#E2E8F033", color: "#334155" }}
+                  style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                 >
                   <LogOut size={15} /> Log out
                 </button>
@@ -1223,15 +1223,15 @@ export default function WaypointDemo() {
             {saveError && (
               <div
                 className="mb-6 px-3 py-2 rounded-md text-xs font-medium"
-                style={{ background: "#DC262622", color: "#DC2626" }}
+                style={{ background: "#F9731622", color: "#F97316" }}
               >
                 Changes aren't saving to the database right now — edits may not persist.
               </div>
             )}
 
-            <div className="p-4 rounded-lg mb-6" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+            <div className="p-4 rounded-lg mb-6" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
               <div className="flex items-center gap-2 mb-3">
-                <ListChecks size={15} style={{ color: "#1D4ED8" }} />
+                <ListChecks size={15} style={{ color: "#E11D2E" }} />
                 <h3 className="text-sm font-semibold">Progress stages</h3>
               </div>
               <div className="space-y-2">
@@ -1239,20 +1239,20 @@ export default function WaypointDemo() {
                   const isLast = i === stages.length - 1;
                   return (
                     <div key={`${label}-${i}`} className="flex items-center gap-2">
-                      <span className="mono text-xs w-5 shrink-0" style={{ color: "#64748B" }}>{i + 1}</span>
+                      <span className="mono text-xs w-5 shrink-0" style={{ color: "#A3A3A3" }}>{i + 1}</span>
                       <input
                         value={label}
                         disabled={isLast}
                         onChange={(e) => renameStage(i, e.target.value)}
                         className="flex-1 px-2.5 py-1.5 rounded text-sm outline-none disabled:opacity-60"
-                        style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                        style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                       />
                       <div className="flex gap-0.5 shrink-0">
                         <button
                           onClick={() => moveStage(i, -1)}
                           disabled={isLast || i === 0}
                           className="p-1.5 rounded-md disabled:opacity-25 disabled:cursor-not-allowed hover:brightness-125"
-                          style={{ background: "#E2E8F033", color: "#334155" }}
+                          style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                           title="Move up"
                         >
                           <ChevronUp size={13} />
@@ -1261,7 +1261,7 @@ export default function WaypointDemo() {
                           onClick={() => moveStage(i, 1)}
                           disabled={isLast || i >= stages.length - 2}
                           className="p-1.5 rounded-md disabled:opacity-25 disabled:cursor-not-allowed hover:brightness-125"
-                          style={{ background: "#E2E8F033", color: "#334155" }}
+                          style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                           title="Move down"
                         >
                           <ChevronDown size={13} />
@@ -1271,7 +1271,7 @@ export default function WaypointDemo() {
                         onClick={() => removeStage(i)}
                         disabled={isLast || stages.length <= 2}
                         className="p-1.5 rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-125"
-                        style={{ background: "#DC262622", color: "#DC2626" }}
+                        style={{ background: "#F9731622", color: "#F97316" }}
                         title={isLast ? `"Delivered" can't be removed` : "Remove stage"}
                       >
                         <Trash2 size={13} />
@@ -1287,18 +1287,18 @@ export default function WaypointDemo() {
                   onKeyDown={(e) => e.key === "Enter" && handleAddStage()}
                   placeholder="New stage name, e.g. Held at Sorting Facility"
                   className="flex-1 px-2.5 py-1.5 rounded text-sm outline-none"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
                 <button
                   type="button"
                   onClick={handleAddStage}
                   className="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1 shrink-0"
-                  style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                  style={{ background: "#E11D2E", color: "#FFFFFF" }}
                 >
                   <Plus size={13} /> Add
                 </button>
               </div>
-              <p className="text-xs mt-2" style={{ color: "#64748B" }}>
+              <p className="text-xs mt-2" style={{ color: "#A3A3A3" }}>
                 New stages are inserted just before "Delivered", which always stays last.
               </p>
             </div>
@@ -1306,37 +1306,37 @@ export default function WaypointDemo() {
             {showAdminForm && (
               <div
                 className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg mb-6"
-                style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}
+                style={{ background: "#141414", border: "1px solid #2A2A2A" }}
               >
                 <input
                   placeholder="Sender name" value={adminForm.sender}
                   onChange={(e) => setAdminForm({ ...adminForm, sender: e.target.value })}
                   className="px-3 py-2 rounded-md text-sm outline-none col-span-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
                 <input
                   placeholder="Pickup city" value={adminForm.origin}
                   onChange={(e) => setAdminForm({ ...adminForm, origin: e.target.value })}
                   className="px-3 py-2 rounded-md text-sm outline-none col-span-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
                 <input
                   placeholder="Recipient name" value={adminForm.recipient}
                   onChange={(e) => setAdminForm({ ...adminForm, recipient: e.target.value })}
                   className="px-3 py-2 rounded-md text-sm outline-none col-span-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
                 <input
                   placeholder="Delivery city" value={adminForm.dest}
                   onChange={(e) => setAdminForm({ ...adminForm, dest: e.target.value })}
                   className="px-3 py-2 rounded-md text-sm outline-none col-span-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
                 <select
                   value={adminForm.service}
                   onChange={(e) => setAdminForm({ ...adminForm, service: e.target.value })}
                   className="px-3 py-2 rounded-md text-sm outline-none col-span-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 >
                   <option>Standard</option>
                   <option>Express</option>
@@ -1345,7 +1345,7 @@ export default function WaypointDemo() {
                   type="button"
                   onClick={handleAdminCreate}
                   className="col-span-1 py-2 rounded-md text-sm font-semibold"
-                  style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+                  style={{ background: "#E11D2E", color: "#FFFFFF" }}
                 >
                   Create shipment
                 </button>
@@ -1354,13 +1354,13 @@ export default function WaypointDemo() {
 
             <div className="space-y-3">
               {sorted.map((s) => (
-                <div key={s.id} className="p-4 rounded-lg" style={{ background: "#FFFFFF", border: "1px solid #E2E8F0" }}>
+                <div key={s.id} className="p-4 rounded-lg" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="mono text-sm" style={{ color: "#0F172A" }}>{s.id}</p>
+                    <p className="mono text-sm" style={{ color: "#FFFFFF" }}>{s.id}</p>
                     <button
                       onClick={() => deleteShipment(s.id)}
                       className="p-1.5 rounded-md hover:brightness-125"
-                      style={{ background: "#DC262622", color: "#DC2626" }}
+                      style={{ background: "#F9731622", color: "#F97316" }}
                       title="Delete shipment"
                     >
                       <Trash2 size={14} />
@@ -1373,28 +1373,28 @@ export default function WaypointDemo() {
                       onChange={(e) => updateShipment(s.id, { sender: e.target.value })}
                       placeholder="Sender"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
                       value={s.origin}
                       onChange={(e) => updateShipment(s.id, { origin: e.target.value })}
                       placeholder="Origin"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
                       value={s.recipient}
                       onChange={(e) => updateShipment(s.id, { recipient: e.target.value })}
                       placeholder="Recipient"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
                       value={s.dest}
                       onChange={(e) => updateShipment(s.id, { dest: e.target.value })}
                       placeholder="Destination"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                   </div>
 
@@ -1403,7 +1403,7 @@ export default function WaypointDemo() {
                       value={s.service}
                       onChange={(e) => updateShipment(s.id, { service: e.target.value })}
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     >
                       <option>Standard</option>
                       <option>Express</option>
@@ -1419,14 +1419,14 @@ export default function WaypointDemo() {
                         })
                       }
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
-                      style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     >
                       {stages.map((label, i) => (
                         <option key={`${label}-${i}`} value={i}>{label}</option>
                       ))}
                     </select>
 
-                    <label className="flex items-center gap-1.5 text-xs" style={{ color: "#334155" }}>
+                    <label className="flex items-center gap-1.5 text-xs" style={{ color: "#D4D4D4" }}>
                       <input
                         type="checkbox"
                         checked={!!s.auto}
@@ -1438,7 +1438,7 @@ export default function WaypointDemo() {
                     <button
                       onClick={() => setOpenTimesFor(openTimesFor === s.id ? null : s.id)}
                       className="text-xs font-medium px-2.5 py-1.5 rounded flex items-center gap-1"
-                      style={{ background: "#E2E8F033", color: "#334155" }}
+                      style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                     >
                       <CalendarClock size={12} /> {openTimesFor === s.id ? "Hide times" : "Edit times"}
                     </button>
@@ -1449,16 +1449,16 @@ export default function WaypointDemo() {
                         setTab("track");
                       }}
                       className="ml-auto text-xs font-medium px-2.5 py-1.5 rounded flex items-center gap-1"
-                      style={{ background: "#E2E8F033", color: "#334155" }}
+                      style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                     >
                       View <ChevronRight size={12} />
                     </button>
                   </div>
 
                   {openTimesFor === s.id && (
-                    <div className="mt-3 pt-3 space-y-2" style={{ borderTop: "1px solid #E2E8F0" }}>
+                    <div className="mt-3 pt-3 space-y-2" style={{ borderTop: "1px solid #2A2A2A" }}>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs w-32 shrink-0" style={{ color: "#64748B" }}>Estimated arrival</span>
+                        <span className="text-xs w-32 shrink-0" style={{ color: "#A3A3A3" }}>Estimated arrival</span>
                         <input
                           type="datetime-local"
                           value={toDatetimeLocal(s.etaTimestamp ?? Date.now())}
@@ -1471,12 +1471,12 @@ export default function WaypointDemo() {
                             });
                           }}
                           className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
-                          style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                          style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                         />
                       </div>
                       {stages.map((label, i) => (
                         <div key={`${label}-${i}`} className="flex items-center gap-2">
-                          <span className="text-xs w-32 shrink-0 truncate" style={{ color: "#64748B" }} title={label}>{label}</span>
+                          <span className="text-xs w-32 shrink-0 truncate" style={{ color: "#A3A3A3" }} title={label}>{label}</span>
                           <input
                             type="datetime-local"
                             value={toDatetimeLocal(s.stageTimes?.[i] ?? (s.createdAt + i * 3.2 * 3600 * 1000))}
@@ -1485,7 +1485,7 @@ export default function WaypointDemo() {
                               if (ms != null) updateStageTime(s.id, i, ms);
                             }}
                             className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
-                            style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+                            style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                           />
                         </div>
                       ))}
@@ -1494,7 +1494,7 @@ export default function WaypointDemo() {
                 </div>
               ))}
               {sorted.length === 0 && (
-                <p className="text-sm" style={{ color: "#64748B" }}>No shipments yet.</p>
+                <p className="text-sm" style={{ color: "#A3A3A3" }}>No shipments yet.</p>
               )}
             </div>
           </div>
@@ -1504,14 +1504,14 @@ export default function WaypointDemo() {
         {tab === "privacy" && (
           <div className="max-w-2xl">
             <h2 className="display text-4xl mb-6">Privacy Notice</h2>
-            <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#334155" }}>
+            <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
               <p>
                 This Privacy Notice explains how Waypoint Inc. ("Waypoint," "we," "us")
                 collects, uses, and protects information in connection with our shipping and tracking
                 services. This is a demo notice for illustrative purposes.
               </p>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Information we collect</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Information we collect</h3>
                 <p>
                   When you create a shipment or contact us, we may collect sender and recipient names,
                   pickup and delivery addresses, service selections, and any details you send us directly,
@@ -1519,31 +1519,31 @@ export default function WaypointDemo() {
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>How we use information</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>How we use information</h3>
                 <p>
                   We use shipment information to generate tracking numbers, display delivery status, and
                   respond to support requests. We do not sell personal information to third parties.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Data retention</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Data retention</h3>
                 <p>
                   Shipment and tracking records are retained only as long as needed to provide the service
                   and to meet any applicable legal or recordkeeping obligations.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Your choices</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Your choices</h3>
                 <p>
                   You may contact us at any time to ask what information we hold about a shipment or to
                   request corrections.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Contact us</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Contact us</h3>
                 <p>
                   Questions about this notice can be sent to{" "}
-                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#1D4ED8" }}>
+                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
                     supportwaypoint24zendesk@gmail.com
                   </a>.
                 </p>
@@ -1556,51 +1556,51 @@ export default function WaypointDemo() {
         {tab === "terms" && (
           <div className="max-w-2xl">
             <h2 className="display text-4xl mb-6">Terms &amp; Conditions</h2>
-            <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#334155" }}>
+            <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
               <p>
                 These Terms &amp; Conditions govern your use of Waypoint Inc.'s shipping and
                 tracking services. This is a demo notice for illustrative purposes.
               </p>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Acceptance of terms</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Acceptance of terms</h3>
                 <p>
                   By creating a shipment or otherwise using this service, you agree to be bound by these
                   terms.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Shipping &amp; delivery</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Shipping &amp; delivery</h3>
                 <p>
                   Estimated delivery windows are approximate and are not guaranteed. Delivery times may
                   vary based on service level, destination, and factors outside our control.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Prohibited items</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Prohibited items</h3>
                 <p>
                   You agree not to ship any item that is illegal, hazardous, or otherwise prohibited by
                   applicable law or by our carrier partners.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Limitation of liability</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Limitation of liability</h3>
                 <p>
                   Waypoint Inc. is not liable for indirect, incidental, or consequential damages
                   arising from delays, loss, or damage in transit, except as required by applicable law.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Changes to these terms</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Changes to these terms</h3>
                 <p>
                   We may update these terms from time to time. Continued use of the service after changes
                   are posted constitutes acceptance of the revised terms.
                 </p>
               </div>
               <div>
-                <h3 className="text-base font-semibold mb-1" style={{ color: "#0F172A" }}>Contact us</h3>
+                <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Contact us</h3>
                 <p>
                   Questions about these terms can be sent to{" "}
-                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#1D4ED8" }}>
+                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
                     supportwaypoint24zendesk@gmail.com
                   </a>.
                 </p>
@@ -1611,14 +1611,14 @@ export default function WaypointDemo() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t mt-10" style={{ borderColor: "#E2E8F066" }}>
+      <footer className="border-t mt-10" style={{ borderColor: "#2A2A2A66" }}>
         <div className="max-w-5xl mx-auto px-5 py-8 flex flex-col items-center gap-3 text-center">
           <div className="flex gap-5 text-sm font-medium">
-            <button onClick={() => setTab("privacy")} style={{ color: "#334155" }}>Privacy</button>
-            <button onClick={() => setTab("terms")} style={{ color: "#334155" }}>Terms &amp; Conditions</button>
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#334155" }}>Contact</a>
+            <button onClick={() => setTab("privacy")} style={{ color: "#D4D4D4" }}>Privacy</button>
+            <button onClick={() => setTab("terms")} style={{ color: "#D4D4D4" }}>Terms &amp; Conditions</button>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#D4D4D4" }}>Contact</a>
           </div>
-          <p className="text-xs" style={{ color: "#94A3B8" }}>
+          <p className="text-xs" style={{ color: "#6B6B6B" }}>
             © 2005-2026 Waypoint Inc.<br />All Rights Reserved.
           </p>
         </div>
@@ -1631,17 +1631,17 @@ export default function WaypointDemo() {
           style={{
             width: "min(22rem, calc(100vw - 2rem))",
             height: "min(32rem, calc(100vh - 10rem))",
-            background: "#FFFFFFee", border: "1px solid #E2E8F0",
+            background: "#141414ee", border: "1px solid #2A2A2A",
             backdropFilter: "blur(12px)",
-            boxShadow: "0 24px 48px rgba(15,23,42,0.18), 0 0 0 1px #1D4ED822",
+            boxShadow: "0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px #E11D2E22",
           }}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "#E2E8F0" }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "#2A2A2A" }}>
             <div className="flex items-center gap-2">
-              <Sparkles size={15} style={{ color: "#1D4ED8" }} />
+              <Sparkles size={15} style={{ color: "#E11D2E" }} />
               <span className="text-sm font-semibold">Waypoint Assistant</span>
             </div>
-            <button onClick={() => setChatOpen(false)} className="p-1 rounded hover:brightness-125" style={{ color: "#64748B" }}>
+            <button onClick={() => setChatOpen(false)} className="p-1 rounded hover:brightness-125" style={{ color: "#A3A3A3" }}>
               <X size={16} />
             </button>
           </div>
@@ -1653,8 +1653,8 @@ export default function WaypointDemo() {
                   className="text-xs leading-relaxed px-3 py-2 rounded-xl max-w-[85%] whitespace-pre-wrap"
                   style={
                     m.role === "user"
-                      ? { background: "#1D4ED8", color: "#F7F9FC" }
-                      : { background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#1E293B" }
+                      ? { background: "#E11D2E", color: "#FFFFFF" }
+                      : { background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#D4D4D4" }
                   }
                 >
                   {m.content}
@@ -1665,7 +1665,7 @@ export default function WaypointDemo() {
               <div className="flex justify-start">
                 <p
                   className="text-xs px-3 py-2 rounded-xl flex items-center gap-1"
-                  style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#64748B" }}
+                  style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#A3A3A3" }}
                 >
                   <RefreshCw size={11} className="animate-spin" /> Thinking...
                 </p>
@@ -1674,21 +1674,21 @@ export default function WaypointDemo() {
             <div ref={chatEndRef} />
           </div>
 
-          <div className="flex items-center gap-2 p-2.5 border-t" style={{ borderColor: "#E2E8F0" }}>
+          <div className="flex items-center gap-2 p-2.5 border-t" style={{ borderColor: "#2A2A2A" }}>
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
               placeholder="Ask about tracking, delivery times..."
               className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#F7F9FC", border: "1px solid #E2E8F0", color: "#0F172A" }}
+              style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
             />
             <button
               type="button"
               onClick={sendChatMessage}
               disabled={chatLoading || !chatInput.trim()}
               className="btn-glow p-2 rounded-lg disabled:opacity-40"
-              style={{ background: "#1D4ED8", color: "#F7F9FC" }}
+              style={{ background: "#E11D2E", color: "#FFFFFF" }}
             >
               <Send size={14} />
             </button>
@@ -1699,7 +1699,7 @@ export default function WaypointDemo() {
       <button
         onClick={() => setChatOpen((v) => !v)}
         className={`fixed z-50 rounded-full flex items-center justify-center shadow-lg hover:brightness-110 hover:scale-105 transition-transform chat-btn-pos ${!chatOpen ? "pulse-ring" : ""}`}
-        style={{ width: "3.25rem", height: "3.25rem", background: "#1D4ED8", color: "#F7F9FC" }}
+        style={{ width: "3.25rem", height: "3.25rem", background: "#E11D2E", color: "#FFFFFF" }}
         title="Chat with the Waypoint Assistant"
       >
         {chatOpen ? <X size={20} /> : <MessageCircle size={20} />}
