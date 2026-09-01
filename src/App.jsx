@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Package, Truck, MapPin, CheckCircle2, Search, Plus, ArrowRight, Clock, ChevronRight, ChevronDown, ChevronUp, ShieldCheck, Trash2, Settings, RefreshCw, Lock, LogOut, Circle, ListChecks, Globe, Warehouse, Building2, Undo2, Zap, FileText, CalendarClock, MessageCircle, X, Send, Sparkles } from "lucide-react";
 
 const DEFAULT_STAGES = ["Label Created", "Picked Up", "In Transit", "Out for Delivery", "Customs Clearance", "Delivered"];
@@ -352,7 +353,15 @@ export default function LandmarkDemo() {
   const [newStageName, setNewStageName] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
   const [openTimesFor, setOpenTimesFor] = useState(null);
-  const [tab, setTab] = useState("home"); // home | track | ship | admin | privacy | terms
+  // Tab now lives in the URL instead of local state, so each tab is a real,
+  // shareable, reloadable page (/, /track, /admin, /privacy, /terms).
+  // setTab(key) navigates; every existing setTab(...) call below keeps working as-is.
+  const PATH_TO_TAB = { "/": "home", "/track": "track", "/admin": "admin", "/privacy": "privacy", "/terms": "terms" };
+  const TAB_TO_PATH = { home: "/", track: "/track", admin: "/admin", privacy: "/privacy", terms: "/terms" };
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tab = PATH_TO_TAB[location.pathname] || "home";
+  const setTab = (key) => navigate(TAB_TO_PATH[key] || "/");
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState(null);
   const [searched, setSearched] = useState(false);
