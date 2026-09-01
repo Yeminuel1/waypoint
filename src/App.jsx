@@ -35,7 +35,7 @@ const CHAT_KNOWLEDGE = [
   },
   {
     keywords: ["track", "tracking number", "where is my", "where's my", "status"],
-    reply: "Head to the Track tab and enter your tracking number (format like WPT-188141953N1) — no account needed. I don't have access to live shipment data myself, so that's the fastest way to get a real answer.",
+    reply: "Head to the Track tab and enter your tracking number (format like LTN-188141953N1) — no account needed. I don't have access to live shipment data myself, so that's the fastest way to get a real answer.",
   },
   {
     keywords: ["lost", "delayed", "late", "missing", "problem"],
@@ -63,7 +63,7 @@ const CHAT_KNOWLEDGE = [
   },
   {
     keywords: ["admin", "password", "login", "credentials"],
-    reply: "The Admin area is for Waypoint staff only — I can't help with admin access.",
+    reply: "The Admin area is for Landmark staff only — I can't help with admin access.",
   },
 ];
 
@@ -78,7 +78,7 @@ function matchChatReply(input) {
 function genTracking() {
   const digits = Math.floor(100000000 + Math.random() * 899999999); // 9 digits
   const suffix = Math.floor(Math.random() * 10); // 1 digit
-  return `WPT-${digits}N${suffix}`;
+  return `LTN-${digits}N${suffix}`;
 }
 
 function fmtDateTime(ms) {
@@ -105,21 +105,21 @@ function fromDatetimeLocal(value) {
 
 const SEED_SHIPMENTS = [
   {
-    id: "WPT-188141953N1",
+    id: "LTN-188141953N1",
     sender: "Amara Studio", origin: "Newark, NJ",
     recipient: "Kofi Mensah", dest: "Columbus, OH",
     service: "Express", stage: 2, createdAt: Date.now() - 5 * 3600 * 1000,
     eta: hoursFromNow(3), etaTimestamp: Date.now() + 3 * 3600 * 1000, stageTimes: {}, auto: true,
   },
   {
-    id: "WPT-204957710N3",
+    id: "LTN-204957710N3",
     sender: "Northfield Supplies", origin: "Dallas, TX",
     recipient: "Adjoa Boateng", dest: "Austin, TX",
     service: "Standard", stage: DEFAULT_STAGES.length - 1, createdAt: Date.now() - 30 * 3600 * 1000,
     eta: "Delivered", etaTimestamp: Date.now() - 2 * 3600 * 1000, stageTimes: {}, auto: false,
   },
   {
-    id: "WPT-773421068N0",
+    id: "LTN-773421068N0",
     sender: "Bright Print Co.", origin: "Portland, OR",
     recipient: "Yaw Darko", dest: "Seattle, WA",
     service: "Standard", stage: 0, createdAt: Date.now() - 20 * 60 * 1000,
@@ -342,7 +342,7 @@ function Counter({ value, suffix = "", duration = 1200 }) {
   );
 }
 
-export default function WaypointDemo() {
+export default function LandmarkDemo() {
   const [shipments, setShipments] = useState(SEED_SHIPMENTS);
   const [stages, setStages] = useState(DEFAULT_STAGES);
   const [stageIconKeys, setStageIconKeys] = useState(DEFAULT_STAGE_ICON_KEYS);
@@ -364,7 +364,7 @@ export default function WaypointDemo() {
   const [justCreated, setJustCreated] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { role: "assistant", content: "Hi! I'm the Waypoint assistant. Ask me about tracking, delivery times, customs, or anything else shipping-related." },
+    { role: "assistant", content: "Hi! I'm the Landmark assistant. Ask me about tracking, delivery times, customs, or anything else shipping-related." },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -372,61 +372,44 @@ export default function WaypointDemo() {
 
   const active = shipments.find((s) => s.id === activeId) || null;
 
-  // Load real data from persistent storage on mount. This is shared across
-  // everyone who opens this site, so it behaves like a real database rather
-  // than per-browser memory. If a key doesn't exist yet (first-ever load),
-  // the catch just keeps the seed data, which then gets written on first save.
+  // Load saved data from this browser's localStorage on mount. Data persists
+  // across visits on this device, but isn't shared across other devices/users
+  // — wire up a real backend (e.g. Supabase) here for that.
   useEffect(() => {
-    let cancelled = false;
-    async function loadShipments() {
-      try {
-        const res = await window.storage.get("shipments", true);
-        if (res && !cancelled) setShipments(JSON.parse(res.value));
-      } catch (e) {
-        // no stored shipments yet — keep seed data
+    try {
+      const raw = localStorage.getItem("landmark-shipments");
+      if (raw) setShipments(JSON.parse(raw));
+    } catch (e) {
+      // nothing saved yet, or storage unavailable — keep seed data
+    }
+    try {
+      const raw = localStorage.getItem("landmark-stages-config");
+      if (raw) {
+        const cfg = JSON.parse(raw);
+        if (cfg.stages) setStages(cfg.stages);
+        if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
       }
+    } catch (e) {
+      // nothing saved yet, or storage unavailable — keep defaults
     }
-    async function loadStageConfig() {
-      try {
-        const res = await window.storage.get("stages-config", true);
-        if (res && !cancelled) {
-          const cfg = JSON.parse(res.value);
-          if (cfg.stages) setStages(cfg.stages);
-          if (cfg.iconKeys) setStageIconKeys(cfg.iconKeys);
-        }
-      } catch (e) {
-        // no stored stage config yet — keep defaults
-      }
-    }
-    async function load() {
-      // Run both reads in parallel rather than one after another, so the
-      // seed data gets replaced with real data as fast as possible.
-      await Promise.all([loadShipments(), loadStageConfig()]);
-      if (!cancelled) setLoaded(true);
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
+    setLoaded(true);
   }, []);
 
-  // Persist shipments to shared storage whenever they change (after initial load).
+  // Persist shipments to localStorage whenever they change (after initial load).
   useEffect(() => {
     if (!loaded) return;
     try {
-      window.storage?.set("shipments", JSON.stringify(shipments), true)?.catch(() => setSaveError(true));
+      localStorage.setItem("landmark-shipments", JSON.stringify(shipments));
     } catch (e) {
       setSaveError(true);
     }
   }, [shipments, loaded]);
 
-  // Persist stage config to shared storage whenever it changes (after initial load).
+  // Persist stage config to localStorage whenever it changes (after initial load).
   useEffect(() => {
     if (!loaded) return;
     try {
-      window.storage
-        ?.set("stages-config", JSON.stringify({ stages, iconKeys: stageIconKeys }), true)
-        ?.catch(() => setSaveError(true));
+      localStorage.setItem("landmark-stages-config", JSON.stringify({ stages, iconKeys: stageIconKeys }));
     } catch (e) {
       setSaveError(true);
     }
@@ -652,7 +635,7 @@ export default function WaypointDemo() {
             <div className="w-8 h-8 rounded flex items-center justify-center" style={{ background: "#E11D2E" }}>
               <Truck size={17} color="#FFFFFF" />
             </div>
-            <span className="display text-2xl">Waypoint</span>
+            <span className="display text-2xl">Landmark</span>
           </button>
           <nav className="hidden md:flex gap-1">
             {[
@@ -672,7 +655,7 @@ export default function WaypointDemo() {
               </button>
             ))}
             <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint"
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark"
               target="_blank"
               rel="noopener noreferrer"
               className="px-3.5 py-2 rounded-md text-sm font-medium transition-all hover:-translate-y-0.5"
@@ -720,7 +703,7 @@ export default function WaypointDemo() {
           </button>
         ))}
         <a
-          href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint"
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark"
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5"
@@ -756,7 +739,7 @@ export default function WaypointDemo() {
                   Open your world to every doorstep.
                 </h1>
                 <p className="mt-5 max-w-xl text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
-                  Waypoint moves parcels across borders and across town —
+                  Landmark moves parcels across borders and across town —
                   pairing a trusted carrier network with customs expertise, so your
                   shipments clear faster and arrive on time.
                 </p>
@@ -919,7 +902,7 @@ export default function WaypointDemo() {
                   </p>
                   <h2 className="display text-3xl mb-4">See exactly where every parcel is</h2>
                   <p className="text-sm leading-relaxed mb-5" style={{ color: "#D4D4D4" }}>
-                    Waypoint Pulse gives you and your customers one real-time view of
+                    Landmark Pulse gives you and your customers one real-time view of
                     every shipment — from the moment a label is created to the knock on
                     the door.
                   </p>
@@ -947,7 +930,7 @@ export default function WaypointDemo() {
 
                 <div className="card-hover rounded-2xl p-6" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
                   <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
-                  <p className="display text-xl mt-0.5 mb-3">WPT-284719055N2</p>
+                  <p className="display text-xl mt-0.5 mb-3">LTN-284719055N2</p>
                   <StageBadge
                     stage={Math.min(2, stages.length - 1)}
                     stages={stages}
@@ -990,7 +973,7 @@ export default function WaypointDemo() {
                   </p>
                   <h2 className="display text-3xl mb-4">Built for ambitious shipments</h2>
                   <p className="text-sm leading-relaxed mb-3" style={{ color: "#D4D4D4" }}>
-                    Waypoint started in 2005 with a simple idea: moving a parcel
+                    Landmark started in 2005 with a simple idea: moving a parcel
                     across a border shouldn't be any harder than moving it across town.
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color: "#A3A3A3" }}>
@@ -1005,7 +988,7 @@ export default function WaypointDemo() {
                     "The best logistics partner is the one you stop thinking about —
                     because things just arrive."
                   </p>
-                  <p className="mono text-xs mt-3" style={{ color: "#A3A3A3" }}>— Waypoint Ops Team</p>
+                  <p className="mono text-xs mt-3" style={{ color: "#A3A3A3" }}>— Landmark Ops Team</p>
                 </div>
               </section>
             </Reveal>
@@ -1080,7 +1063,7 @@ export default function WaypointDemo() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-                  placeholder={`Enter tracking number, e.g. ${active?.id || "WPT-188141953N1"}`}
+                  placeholder={`Enter tracking number, e.g. ${active?.id || "LTN-188141953N1"}`}
                   className="w-full pl-10 pr-4 py-3 rounded-lg text-sm mono outline-none"
                   style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
@@ -1506,7 +1489,7 @@ export default function WaypointDemo() {
             <h2 className="display text-4xl mb-6">Privacy Notice</h2>
             <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
               <p>
-                This Privacy Notice explains how Waypoint Inc. ("Waypoint," "we," "us")
+                This Privacy Notice explains how Landmark Inc. ("Landmark," "we," "us")
                 collects, uses, and protects information in connection with our shipping and tracking
                 services. This is a demo notice for illustrative purposes.
               </p>
@@ -1543,8 +1526,8 @@ export default function WaypointDemo() {
                 <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Contact us</h3>
                 <p>
                   Questions about this notice can be sent to{" "}
-                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
-                    supportwaypoint24zendesk@gmail.com
+                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
+                    supportlandmarkglobal24zendesk@gmail.com
                   </a>.
                 </p>
               </div>
@@ -1558,7 +1541,7 @@ export default function WaypointDemo() {
             <h2 className="display text-4xl mb-6">Terms &amp; Conditions</h2>
             <div className="space-y-5 text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
               <p>
-                These Terms &amp; Conditions govern your use of Waypoint Inc.'s shipping and
+                These Terms &amp; Conditions govern your use of Landmark Inc.'s shipping and
                 tracking services. This is a demo notice for illustrative purposes.
               </p>
               <div>
@@ -1585,7 +1568,7 @@ export default function WaypointDemo() {
               <div>
                 <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Limitation of liability</h3>
                 <p>
-                  Waypoint Inc. is not liable for indirect, incidental, or consequential damages
+                  Landmark Inc. is not liable for indirect, incidental, or consequential damages
                   arising from delays, loss, or damage in transit, except as required by applicable law.
                 </p>
               </div>
@@ -1600,8 +1583,8 @@ export default function WaypointDemo() {
                 <h3 className="text-base font-semibold mb-1" style={{ color: "#FFFFFF" }}>Contact us</h3>
                 <p>
                   Questions about these terms can be sent to{" "}
-                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
-                    supportwaypoint24zendesk@gmail.com
+                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark" target="_blank" rel="noopener noreferrer" style={{ color: "#E11D2E" }}>
+                    supportlandmarkglobal24zendesk@gmail.com
                   </a>.
                 </p>
               </div>
@@ -1616,10 +1599,10 @@ export default function WaypointDemo() {
           <div className="flex gap-5 text-sm font-medium">
             <button onClick={() => setTab("privacy")} style={{ color: "#D4D4D4" }}>Privacy</button>
             <button onClick={() => setTab("terms")} style={{ color: "#D4D4D4" }}>Terms &amp; Conditions</button>
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportwaypoint24zendesk@gmail.com&su=Contact%20Waypoint" target="_blank" rel="noopener noreferrer" style={{ color: "#D4D4D4" }}>Contact</a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark" target="_blank" rel="noopener noreferrer" style={{ color: "#D4D4D4" }}>Contact</a>
           </div>
           <p className="text-xs" style={{ color: "#6B6B6B" }}>
-            © 2005-2026 Waypoint Inc.<br />All Rights Reserved.
+            © 2005-2026 Landmark Inc.<br />All Rights Reserved.
           </p>
         </div>
       </footer>
@@ -1639,7 +1622,7 @@ export default function WaypointDemo() {
           <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "#2A2A2A" }}>
             <div className="flex items-center gap-2">
               <Sparkles size={15} style={{ color: "#E11D2E" }} />
-              <span className="text-sm font-semibold">Waypoint Assistant</span>
+              <span className="text-sm font-semibold">Landmark Assistant</span>
             </div>
             <button onClick={() => setChatOpen(false)} className="p-1 rounded hover:brightness-125" style={{ color: "#A3A3A3" }}>
               <X size={16} />
@@ -1700,7 +1683,7 @@ export default function WaypointDemo() {
         onClick={() => setChatOpen((v) => !v)}
         className={`fixed z-50 rounded-full flex items-center justify-center shadow-lg hover:brightness-110 hover:scale-105 transition-transform chat-btn-pos ${!chatOpen ? "pulse-ring" : ""}`}
         style={{ width: "3.25rem", height: "3.25rem", background: "#E11D2E", color: "#FFFFFF" }}
-        title="Chat with the Waypoint Assistant"
+        title="Chat with the Landmark Assistant"
       >
         {chatOpen ? <X size={20} /> : <MessageCircle size={20} />}
       </button>
