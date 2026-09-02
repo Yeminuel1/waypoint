@@ -665,6 +665,34 @@ export default function LandmarkDemo() {
     return stages.map((defaultLabel, i) => shipment.stageLabels?.[i] || defaultLabel);
   }
 
+  // Admin edits (route fields, stage, progress labels/times) are staged here
+  // per shipment id and only written to `shipments` (and Supabase) when the
+  // admin clicks Save — instead of syncing on every keystroke.
+  const [drafts, setDrafts] = useState({});
+
+  function patchDraft(id, patch) {
+    setDrafts((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), ...patch } }));
+  }
+
+  function saveDraft(id) {
+    const patch = drafts[id];
+    if (!patch) return;
+    updateShipment(id, patch);
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }
+
+  function discardDraft(id) {
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }
+
   function updateStageTime(shipmentId, index, ms) {
     setShipments((prev) =>
       prev.map((s) =>
@@ -1459,8 +1487,12 @@ export default function LandmarkDemo() {
             )}
 
             <div className="space-y-3">
-              {sorted.map((s) => (
-                <div key={s.id} className="p-4 rounded-lg" style={{ background: "#141414", border: "1px solid #2A2A2A" }}>
+              {sorted.map((s) => {
+                const draft = drafts[s.id] || {};
+                const d = { ...s, ...draft };
+                const hasChanges = Object.keys(draft).length > 0;
+                return (
+                <div key={s.id} className="p-4 rounded-lg" style={{ background: "#141414", border: hasChanges ? "1px solid #E11D2E" : "1px solid #2A2A2A" }}>
                   <div className="flex items-center justify-between mb-3">
                     <p className="mono text-sm" style={{ color: "#FFFFFF" }}>{s.id}</p>
                     <button
@@ -1475,29 +1507,29 @@ export default function LandmarkDemo() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
-                      value={s.sender}
-                      onChange={(e) => updateShipment(s.id, { sender: e.target.value })}
+                      value={d.sender}
+                      onChange={(e) => patchDraft(s.id, { sender: e.target.value })}
                       placeholder="Sender"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
-                      value={s.origin}
-                      onChange={(e) => updateShipment(s.id, { origin: e.target.value })}
+                      value={d.origin}
+                      onChange={(e) => patchDraft(s.id, { origin: e.target.value })}
                       placeholder="Origin"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
-                      value={s.recipient}
-                      onChange={(e) => updateShipment(s.id, { recipient: e.target.value })}
+                      value={d.recipient}
+                      onChange={(e) => patchDraft(s.id, { recipient: e.target.value })}
                       placeholder="Recipient"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
                     <input
-                      value={s.dest}
-                      onChange={(e) => updateShipment(s.id, { dest: e.target.value })}
+                      value={d.dest}
+                      onChange={(e) => patchDraft(s.id, { dest: e.target.value })}
                       placeholder="Destination"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
@@ -1506,8 +1538,8 @@ export default function LandmarkDemo() {
 
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     <select
-                      value={s.service}
-                      onChange={(e) => updateShipment(s.id, { service: e.target.value })}
+                      value={d.service}
+                      onChange={(e) => patchDraft(s.id, { service: e.target.value })}
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     >
@@ -1516,12 +1548,12 @@ export default function LandmarkDemo() {
                     </select>
 
                     <select
-                      value={s.stage}
+                      value={d.stage}
                       onChange={(e) =>
-                        updateShipment(s.id, {
+                        patchDraft(s.id, {
                           stage: Number(e.target.value),
                           auto: false,
-                          eta: Number(e.target.value) === stages.length - 1 ? "Delivered" : s.eta,
+                          eta: Number(e.target.value) === stages.length - 1 ? "Delivered" : d.eta,
                         })
                       }
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
@@ -1535,8 +1567,8 @@ export default function LandmarkDemo() {
                     <label className="flex items-center gap-1.5 text-xs" style={{ color: "#D4D4D4" }}>
                       <input
                         type="checkbox"
-                        checked={!!s.auto}
-                        onChange={(e) => updateShipment(s.id, { auto: e.target.checked })}
+                        checked={!!d.auto}
+                        onChange={(e) => patchDraft(s.id, { auto: e.target.checked })}
                       />
                       <RefreshCw size={12} /> Auto-progress
                     </label>
@@ -1554,11 +1586,35 @@ export default function LandmarkDemo() {
                         setActiveId(s.id);
                         setTab("track");
                       }}
-                      className="ml-auto text-xs font-medium px-2.5 py-1.5 rounded flex items-center gap-1"
+                      className="text-xs font-medium px-2.5 py-1.5 rounded flex items-center gap-1"
                       style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
                     >
                       View <ChevronRight size={12} />
                     </button>
+
+                    <div className="ml-auto flex items-center gap-2">
+                      {hasChanges && (
+                        <button
+                          onClick={() => discardDraft(s.id)}
+                          className="text-xs font-medium px-2.5 py-1.5 rounded"
+                          style={{ background: "#2A2A2A33", color: "#D4D4D4" }}
+                        >
+                          Discard
+                        </button>
+                      )}
+                      <button
+                        onClick={() => saveDraft(s.id)}
+                        disabled={!hasChanges}
+                        className="text-xs font-semibold px-3 py-1.5 rounded flex items-center gap-1"
+                        style={{
+                          background: hasChanges ? "#E11D2E" : "#2A2A2A33",
+                          color: hasChanges ? "#FFFFFF" : "#666666",
+                          cursor: hasChanges ? "pointer" : "default",
+                        }}
+                      >
+                        Save{hasChanges ? "" : "d"}
+                      </button>
+                    </div>
                   </div>
 
                   {openTimesFor === s.id && (
@@ -1567,13 +1623,13 @@ export default function LandmarkDemo() {
                         <span className="text-xs w-32 shrink-0" style={{ color: "#A3A3A3" }}>Estimated arrival</span>
                         <input
                           type="datetime-local"
-                          value={toDatetimeLocal(s.etaTimestamp ?? Date.now())}
+                          value={toDatetimeLocal(d.etaTimestamp ?? Date.now())}
                           onChange={(e) => {
                             const ms = fromDatetimeLocal(e.target.value);
                             if (ms == null) return;
-                            updateShipment(s.id, {
+                            patchDraft(s.id, {
                               etaTimestamp: ms,
-                              eta: s.stage >= stages.length - 1 ? "Delivered" : fmtDateTime(ms),
+                              eta: d.stage >= stages.length - 1 ? "Delivered" : fmtDateTime(ms),
                             });
                           }}
                           className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
@@ -1584,18 +1640,24 @@ export default function LandmarkDemo() {
                         <div key={`${label}-${i}`} className="flex items-center gap-2">
                           <span className="text-xs w-32 shrink-0 truncate" style={{ color: "#A3A3A3" }} title={label}>{label}</span>
                           <input
-                            value={s.stageLabels?.[i] || ""}
-                            onChange={(e) => updateStageLabel(s.id, i, e.target.value)}
-                            placeholder={`Override, e.g. "Arrived at ${s.dest} hub"`}
+                            value={d.stageLabels?.[i] || ""}
+                            onChange={(e) => {
+                              const text = e.target.value;
+                              const next = { ...(d.stageLabels || {}) };
+                              if (text.trim()) next[i] = text;
+                              else delete next[i];
+                              patchDraft(s.id, { stageLabels: next });
+                            }}
+                            placeholder={`Override, e.g. "Arrived at ${d.dest} hub"`}
                             className="flex-1 px-2.5 py-1.5 rounded text-xs outline-none"
                             style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                           />
                           <input
                             type="datetime-local"
-                            value={toDatetimeLocal(s.stageTimes?.[i] ?? (s.createdAt + i * 3.2 * 3600 * 1000))}
+                            value={toDatetimeLocal(d.stageTimes?.[i] ?? (d.createdAt + i * 3.2 * 3600 * 1000))}
                             onChange={(e) => {
                               const ms = fromDatetimeLocal(e.target.value);
-                              if (ms != null) updateStageTime(s.id, i, ms);
+                              if (ms != null) patchDraft(s.id, { stageTimes: { ...(d.stageTimes || {}), [i]: ms } });
                             }}
                             className="w-44 shrink-0 px-2.5 py-1.5 rounded text-xs outline-none"
                             style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
@@ -1605,7 +1667,7 @@ export default function LandmarkDemo() {
                     </div>
                   )}
                 </div>
-              ))}
+              );})}
               {sorted.length === 0 && (
                 <p className="text-sm" style={{ color: "#A3A3A3" }}>No shipments yet.</p>
               )}
