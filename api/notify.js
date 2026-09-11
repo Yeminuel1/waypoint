@@ -39,11 +39,16 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           from,
           to: email,
-          subject: `Your shipment ${trackingId} is now: ${stageLabel}`,
+          reply_to: from,
+          subject: `Shipment ${trackingId} update: ${stageLabel}`,
+          text: `Your shipment ${trackingId} has been updated to: ${stageLabel}\n\nTrack your shipment: ${trackingUrl}`,
           html: `
-            <p>Your shipment <strong>${trackingId}</strong> just updated to:</p>
-            <p style="font-size:18px;font-weight:600;">${stageLabel}</p>
-            <p><a href="${trackingUrl}">Track your shipment</a></p>
+            <div style="font-family:sans-serif;font-size:15px;color:#111;line-height:1.5;">
+              <p>Your shipment <strong>${trackingId}</strong> has been updated to:</p>
+              <p style="font-size:18px;font-weight:600;margin:12px 0;">${stageLabel}</p>
+              <p><a href="${trackingUrl}" style="color:#E11D2E;">Track your shipment</a></p>
+              <p style="color:#666;font-size:12px;margin-top:24px;">You're receiving this because a shipment addressed to you was registered with Landmark. If this wasn't expected, you can ignore this email.</p>
+            </div>
           `,
         }),
       });
