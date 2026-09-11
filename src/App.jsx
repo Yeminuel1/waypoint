@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Package, Truck, MapPin, CheckCircle2, Search, Plus, ArrowRight, Clock, ChevronRight, ChevronDown, ChevronUp, ShieldCheck, Trash2, Settings, RefreshCw, Lock, LogOut, Circle, ListChecks, Globe, Warehouse, Building2, Undo2, Zap, FileText, CalendarClock, MessageCircle, X, Send, Sparkles } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { LANGUAGES, t } from "./i18n";
+import { detectLanguageByIP } from "./lib/geoLanguage";
 
 // Converts a DB row (snake_case) to the app's shipment shape (camelCase).
 function rowToShipment(row) {
@@ -374,6 +376,34 @@ export default function LandmarkDemo() {
   const stageIcons = useMemo(() => stageIconKeys.map((k) => ICON_MAP[k] || Circle), [stageIconKeys]);
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
+
+  // Language: null means "no stored preference yet". On first visit (no
+  // saved choice), we detect it once via IP geolocation; after that, the
+  // visitor's own manual choice (if any) always wins and is remembered.
+  const [lang, setLang] = useState(() => localStorage.getItem("landmark-lang") || null);
+  const L = lang || "en";
+
+  useEffect(() => {
+    if (lang) return; // already have a stored preference — don't override it
+    let cancelled = false;
+    detectLanguageByIP(LANGUAGES.map((l) => l.code)).then((detected) => {
+      if (!cancelled) setLang(detected || "en");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!lang) return;
+    try {
+      localStorage.setItem("landmark-lang", lang);
+    } catch (e) {
+      // storage unavailable — language choice just won't persist across visits
+    }
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
   const [newStageName, setNewStageName] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
   const [openTimesFor, setOpenTimesFor] = useState(null);
@@ -788,10 +818,10 @@ export default function LandmarkDemo() {
             </div>
             <span className="display text-2xl">Landmark</span>
           </button>
-          <nav className="hidden md:flex gap-1">
+          <nav className="hidden md:flex items-center gap-1">
             {[
-              ["home", "Home"],
-              ["track", "Track"],
+              ["home", t(L, "nav_home")],
+              ["track", t(L, "nav_track")],
             ].map(([key, label]) => (
               <button
                 key={key}
@@ -812,7 +842,7 @@ export default function LandmarkDemo() {
               className="px-3.5 py-2 rounded-md text-sm font-medium transition-all hover:-translate-y-0.5"
               style={{ color: "#D4D4D4" }}
             >
-              Contact
+              {t(L, "nav_contact")}
             </a>
             <button
               onClick={() => setTab("admin")}
@@ -822,13 +852,37 @@ export default function LandmarkDemo() {
                 color: tab === "admin" ? "#0A0A0A" : "#D4D4D4",
               }}
             >
-              Admin
+              {t(L, "nav_admin")}
             </button>
+            <select
+              value={L}
+              onChange={(e) => setLang(e.target.value)}
+              aria-label={t(L, "lang_switcher_label")}
+              className="ml-1 px-2 py-1.5 rounded-md text-xs font-medium outline-none"
+              style={{ background: "transparent", color: "#D4D4D4", border: "1px solid #2A2A2A" }}
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code} style={{ color: "#000" }}>{l.name}</option>
+              ))}
+            </select>
           </nav>
           {/* Mobile: compact status pill instead of full nav — real nav lives in the bottom tab bar */}
-          <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "#E11D2E11", color: "#E11D2E" }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#16A34A" }} />
-            Live
+          <div className="md:hidden flex items-center gap-2">
+            <select
+              value={L}
+              onChange={(e) => setLang(e.target.value)}
+              aria-label={t(L, "lang_switcher_label")}
+              className="px-2 py-1 rounded-full text-xs font-medium outline-none"
+              style={{ background: "transparent", color: "#D4D4D4", border: "1px solid #2A2A2A" }}
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code} style={{ color: "#000" }}>{l.name}</option>
+              ))}
+            </select>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "#E11D2E11", color: "#E11D2E" }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#16A34A" }} />
+              {t(L, "nav_live")}
+            </div>
           </div>
         </div>
       </header>
@@ -839,8 +893,8 @@ export default function LandmarkDemo() {
         style={{ background: "#141414f5", backdropFilter: "blur(12px)", borderTop: "1px solid #2A2A2A", boxShadow: "0 -8px 24px rgba(0,0,0,0.5)" }}
       >
         {[
-          ["home", "Home", Building2],
-          ["track", "Track", MapPin],
+          ["home", t(L, "nav_home"), Building2],
+          ["track", t(L, "nav_track"), MapPin],
         ].map(([key, label, Icon]) => (
           <button
             key={key}
@@ -861,7 +915,7 @@ export default function LandmarkDemo() {
           style={{ color: "#6B6B6B" }}
         >
           <MessageCircle size={19} />
-          <span className="text-[10px] font-medium">Contact</span>
+          <span className="text-[10px] font-medium">{t(L, "nav_contact")}</span>
         </a>
         <button
           onClick={() => setTab("admin")}
@@ -869,7 +923,7 @@ export default function LandmarkDemo() {
           style={{ color: tab === "admin" ? "#E11D2E" : "#6B6B6B" }}
         >
           <Lock size={19} strokeWidth={tab === "admin" ? 2.4 : 2} />
-          <span className="text-[10px] font-medium">Admin</span>
+          <span className="text-[10px] font-medium">{t(L, "nav_admin")}</span>
           {tab === "admin" && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#E11D2E" }} />}
         </button>
       </nav>
@@ -884,20 +938,16 @@ export default function LandmarkDemo() {
               <div className="blob" style={{ width: 280, height: 280, bottom: -100, right: -80, background: "#16A34A", animationDelay: "3s", opacity: 0.12 }} />
               <div className="relative">
                 <p className="mono text-xs uppercase tracking-[0.2em] mb-3" style={{ color: "#E11D2E" }}>
-                  Global parcel delivery
+                  {t(L, "hero_eyebrow")}
                 </p>
                 <h1 className="display text-5xl md:text-6xl leading-[0.95] max-w-xl gradient-text">
-                  Open your world to every doorstep.
+                  {t(L, "hero_title")}
                 </h1>
                 <p className="mt-5 max-w-xl text-sm leading-relaxed" style={{ color: "#D4D4D4" }}>
-                  Landmark moves parcels across borders and across town —
-                  pairing a trusted carrier network with customs expertise, so your
-                  shipments clear faster and arrive on time.
+                  {t(L, "hero_desc1")}
                 </p>
                 <p className="mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "#A3A3A3" }}>
-                  From the first scan at pickup to the final knock on the door, every
-                  parcel is tracked end to end — so you and your customers always know
-                  exactly where things stand.
+                  {t(L, "hero_desc2")}
                 </p>
                 <div className="flex flex-wrap gap-3 mt-7">
                   <button
@@ -905,7 +955,7 @@ export default function LandmarkDemo() {
                     className="btn-glow flex items-center gap-1.5 px-5 py-3 rounded-lg text-sm font-semibold"
                     style={{ background: "#E11D2E", color: "#FFFFFF" }}
                   >
-                    Track a shipment <ArrowRight size={15} />
+                    {t(L, "hero_cta")} <ArrowRight size={15} />
                   </button>
                 </div>
               </div>
@@ -1214,7 +1264,7 @@ export default function LandmarkDemo() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-                  placeholder={`Enter tracking number, e.g. ${active?.id || "LTN-188141953N1"}`}
+                  placeholder={`${t(L, "track_placeholder_prefix")} ${active?.id || "LTN-188141953N1"}`}
                   className="w-full pl-10 pr-4 py-3 rounded-lg text-sm mono outline-none"
                   style={{ background: "#141414", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                 />
@@ -1225,15 +1275,15 @@ export default function LandmarkDemo() {
                 className="btn-glow px-5 py-3 rounded-lg text-sm font-semibold"
                 style={{ background: "#E11D2E", color: "#FFFFFF" }}
               >
-                Track
+                {t(L, "track_button")}
               </button>
             </div>
 
             {!active && (
               <p className="text-sm" style={{ color: "#A3A3A3" }}>
                 {searched
-                  ? "No shipment found for that tracking number."
-                  : "Enter a tracking number above to see its delivery status."}
+                  ? t(L, "track_not_found")
+                  : t(L, "track_prompt")}
               </p>
             )}
 
@@ -1244,7 +1294,7 @@ export default function LandmarkDemo() {
                     className="mb-5 px-3 py-2 rounded-md text-xs font-medium flex items-center gap-2"
                     style={{ background: "#16A34A22", color: "#16A34A" }}
                   >
-                    <CheckCircle2 size={14} /> Label created — status updates automatically as your shipment moves.
+                    <CheckCircle2 size={14} /> {t(L, "track_label_created")}
                   </div>
                 )}
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -1257,12 +1307,12 @@ export default function LandmarkDemo() {
 
                 <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
                   <div>
-                    <p className="text-xs" style={{ color: "#A3A3A3" }}>From</p>
+                    <p className="text-xs" style={{ color: "#A3A3A3" }}>{t(L, "track_from")}</p>
                     <p className="font-medium">{active.sender}</p>
                     <p style={{ color: "#A3A3A3" }}>{active.origin}</p>
                   </div>
                   <div>
-                    <p className="text-xs" style={{ color: "#A3A3A3" }}>To</p>
+                    <p className="text-xs" style={{ color: "#A3A3A3" }}>{t(L, "track_to")}</p>
                     <p className="font-medium">{active.recipient}</p>
                     <p style={{ color: "#A3A3A3" }}>{active.dest}</p>
                   </div>
@@ -1272,9 +1322,9 @@ export default function LandmarkDemo() {
 
                 <div className="flex items-center gap-1.5 text-sm mt-2" style={{ color: "#D4D4D4" }}>
                   <Clock size={14} />
-                  {active.stage >= stages.length - 1 ? "Delivered" : <>Estimated arrival <span className="mono">{active.eta}</span></>}
+                  {active.stage >= stages.length - 1 ? t(L, "track_delivered") : <>{t(L, "track_estimated_arrival")} <span className="mono">{active.eta}</span></>}
                   <span className="mx-1">·</span>
-                  {active.service} service
+                  {active.service} {t(L, "track_service_suffix")}
                 </div>
 
                 <Timeline stage={active.stage} createdAt={active.createdAt} stages={stages} icons={stageIcons} stageTimes={active.stageTimes} labels={stageLabelsFor(active)} />
@@ -1789,12 +1839,12 @@ export default function LandmarkDemo() {
       <footer className="border-t mt-10" style={{ borderColor: "#2A2A2A66" }}>
         <div className="max-w-5xl mx-auto px-5 py-8 flex flex-col items-center gap-3 text-center">
           <div className="flex gap-5 text-sm font-medium">
-            <button onClick={() => setTab("privacy")} style={{ color: "#D4D4D4" }}>Privacy</button>
-            <button onClick={() => setTab("terms")} style={{ color: "#D4D4D4" }}>Terms &amp; Conditions</button>
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark" target="_blank" rel="noopener noreferrer" style={{ color: "#D4D4D4" }}>Contact</a>
+            <button onClick={() => setTab("privacy")} style={{ color: "#D4D4D4" }}>{t(L, "footer_privacy")}</button>
+            <button onClick={() => setTab("terms")} style={{ color: "#D4D4D4" }}>{t(L, "footer_terms")}</button>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=supportlandmarkglobal24zendesk@gmail.com&su=Contact%20Landmark" target="_blank" rel="noopener noreferrer" style={{ color: "#D4D4D4" }}>{t(L, "footer_contact")}</a>
           </div>
           <p className="text-xs" style={{ color: "#6B6B6B" }}>
-            © 2005-2026 Landmark Inc.<br />All Rights Reserved.
+            © 2005-2026 Landmark Inc.<br />{t(L, "footer_rights")}
           </p>
         </div>
       </footer>
