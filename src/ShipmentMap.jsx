@@ -50,6 +50,28 @@ function FitBounds({ points }) {
   return null;
 }
 
+// Leaflet measures its container's size once, at mount time. If anything
+// around it shifts afterward (a fade-in, a banner appearing/disappearing,
+// a window resize), the map is left with a stale/wrong size and tiles stop
+// rendering correctly — it looks like the map "breaks" shortly after it
+// first appears. Watching the container and re-measuring fixes that.
+function KeepSized() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(container);
+    // Also catch the very first layout settle, which a ResizeObserver can
+    // sometimes miss if it fires before the container's final size is set.
+    const t = setTimeout(() => map.invalidateSize(), 150);
+    return () => {
+      ro.disconnect();
+      clearTimeout(t);
+    };
+  }, [map]);
+  return null;
+}
+
 // Shows origin, destination, and an interpolated "current position" marker
 // along the straight line between them, based on how far through the
 // stages the shipment currently is. This is illustrative (a straight line,
@@ -117,6 +139,7 @@ export default function ShipmentMap({ origin, dest, progress }) {
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds points={points} />
+        <KeepSized />
         <Polyline positions={points} pathOptions={{ color: "#6B6B6B", weight: 2, dashArray: "4 6" }} />
         <Marker position={[originPt.lat, originPt.lng]} icon={dot("#A3A3A3")}>
           <Popup>{origin}</Popup>
