@@ -14,6 +14,8 @@ create table if not exists shipments (
   eta_timestamp bigint,
   stage_times jsonb not null default '{}'::jsonb,
   stage_labels jsonb not null default '{}'::jsonb,
+  notify_email text,
+  notify_phone text,
   auto boolean not null default true
 );
 
