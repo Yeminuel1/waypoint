@@ -7,22 +7,15 @@ import L from "leaflet";
 // geocoding service every time.
 const geocodeCache = new Map();
 
-// Free geocoding via OpenStreetMap's Nominatim — no API key needed. Meant
-// for light/demo use; a production app with real traffic should use a paid
-// geocoding provider with its own rate limits instead.
+// Geocodes a place name via our own server-side proxy (see api/geocode.js)
+// — calling Nominatim directly from the browser isn't allowed by its usage
+// policy and gets silently blocked after a few requests.
 async function geocode(placeName) {
   if (geocodeCache.has(placeName)) return geocodeCache.get(placeName);
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(placeName)}`
-    );
+    const res = await fetch(`/api/geocode?q=${encodeURIComponent(placeName)}`);
     if (!res.ok) throw new Error("geocode failed");
-    const data = await res.json();
-    if (!data[0]) {
-      geocodeCache.set(placeName, null);
-      return null;
-    }
-    const point = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    const point = await res.json();
     geocodeCache.set(placeName, point);
     return point;
   } catch (e) {
@@ -132,12 +125,15 @@ export default function ShipmentMap({ origin, dest, progress }) {
         zoom={4}
         style={{ height: "100%", width: "100%", background: "#141414" }}
         zoomControl={false}
-        attributionControl={false}
+        attributionControl={true}
         scrollWheelZoom={false}
         dragging={false}
         doubleClickZoom={false}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
+        />
         <FitBounds points={points} />
         <KeepSized />
         <Polyline positions={points} pathOptions={{ color: "#6B6B6B", weight: 2, dashArray: "4 6" }} />
