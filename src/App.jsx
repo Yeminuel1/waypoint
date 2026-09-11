@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Package, Truck, MapPin, CheckCircle2, Search, Plus, ArrowRight, Clock, ChevronRight, ChevronDown, ChevronUp, ShieldCheck, Trash2, Settings, RefreshCw, Lock, LogOut, Circle, ListChecks, Globe, Warehouse, Building2, Undo2, Zap, FileText, CalendarClock, MessageCircle, X, Send, Sparkles } from "lucide-react";
+import "leaflet/dist/leaflet.css";
+import ShipmentMap from "./ShipmentMap";
 import { supabase } from "./lib/supabase";
 import { LANGUAGES, t } from "./i18n";
 import { detectLanguageByIP } from "./lib/geoLanguage";
@@ -13,6 +15,7 @@ function rowToShipment(row) {
     stage: row.stage, createdAt: row.created_at, eta: row.eta,
     etaTimestamp: row.eta_timestamp, stageTimes: row.stage_times || {},
     stageLabels: row.stage_labels || {}, auto: row.auto,
+    notifyEmail: row.notify_email || "", notifyPhone: row.notify_phone || "",
   };
 }
 
@@ -23,6 +26,7 @@ function shipmentToRow(s) {
     dest: s.dest, service: s.service, stage: s.stage, created_at: s.createdAt,
     eta: s.eta, eta_timestamp: s.etaTimestamp, stage_times: s.stageTimes,
     stage_labels: s.stageLabels || {}, auto: s.auto,
+    notify_email: s.notifyEmail || null, notify_phone: s.notifyPhone || null,
   };
 }
 
@@ -419,6 +423,21 @@ export default function LandmarkDemo() {
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState(null);
   const [searched, setSearched] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // A QR code on the tracking result links to /track?id=<tracking-number>.
+  // When someone scans it and lands here, auto-fill the search and jump
+  // straight to that shipment instead of showing an empty search box.
+  useEffect(() => {
+    const idFromLink = searchParams.get("id");
+    if (idFromLink && tab === "track") {
+      setQuery(idFromLink);
+      setSearched(true);
+      const found = shipments.find((s) => s.id.toLowerCase() === idFromLink.toLowerCase());
+      if (found) setActiveId(found.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, tab, loaded]);
   const [adminForm, setAdminForm] = useState({ sender: "", origin: "", recipient: "", dest: "", service: "Standard" });
   const [showAdminForm, setShowAdminForm] = useState(false);
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
@@ -545,13 +564,17 @@ export default function LandmarkDemo() {
   // Admin edits to stage/fields turn `auto` off for that shipment so manual control sticks.
   useEffect(() => {
     const timer = setInterval(() => {
-      setShipments((prev) =>
-        prev.map((s) =>
+      setShipments((prev) => {
+        const next = prev.map((s) =>
           s.auto && s.stage < stages.length - 1
             ? { ...s, stage: s.stage + 1, eta: s.stage + 1 === stages.length - 1 ? "Delivered" : s.eta }
             : s
-        )
-      );
+        );
+        next.forEach((s, i) => {
+          if (s.stage !== prev[i].stage) notifyStageChange(s);
+        });
+        return next;
+      });
     }, 4000);
     return () => clearInterval(timer);
   }, [stages.length]);
@@ -561,8 +584,36 @@ export default function LandmarkDemo() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, chatOpen, chatLoading]);
 
+  // Fires an email/SMS to whatever contact info is set on the shipment,
+  // whenever its stage changes. Safe to call even if no contact info is
+  // set, or if the /api/notify function isn't configured — it just no-ops.
+  function notifyStageChange(shipment) {
+    if (!shipment.notifyEmail && !shipment.notifyPhone) return;
+    const stageLabel = stageLabelsFor(shipment)[shipment.stage] || stages[shipment.stage];
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: shipment.notifyEmail || null,
+        phone: shipment.notifyPhone || null,
+        trackingId: shipment.id,
+        stageLabel,
+        trackingUrl: `${window.location.origin}/track?id=${shipment.id}`,
+      }),
+    }).catch(() => {
+      // best-effort — a failed notification shouldn't break the tracking UI
+    });
+  }
+
   function updateShipment(id, patch) {
-    setShipments((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    setShipments((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        const next = { ...s, ...patch };
+        if (patch.stage !== undefined && patch.stage !== s.stage) notifyStageChange(next);
+        return next;
+      })
+    );
   }
 
   function deleteShipment(id) {
@@ -1298,9 +1349,19 @@ export default function LandmarkDemo() {
                   </div>
                 )}
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
-                    <p className="display text-2xl mt-0.5">{active.id}</p>
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(`${window.location.origin}/track?id=${active.id}`)}`}
+                      alt="QR code linking to this shipment's tracking page"
+                      width={72}
+                      height={72}
+                      className="rounded-md shrink-0"
+                      style={{ background: "#FFFFFF", padding: 4 }}
+                    />
+                    <div>
+                      <p className="mono text-xs" style={{ color: "#A3A3A3" }}>TRACKING NUMBER</p>
+                      <p className="display text-2xl mt-0.5">{active.id}</p>
+                    </div>
                   </div>
                   <StageBadge stage={active.stage} stages={stages} icons={stageIcons} labels={stageLabelsFor(active)} />
                 </div>
@@ -1319,6 +1380,12 @@ export default function LandmarkDemo() {
                 </div>
 
                 <RouteVisual stage={active.stage} stages={stages} />
+
+                <ShipmentMap
+                  origin={active.origin}
+                  dest={active.dest}
+                  progress={stages.length > 1 ? active.stage / (stages.length - 1) : 0}
+                />
 
                 <div className="flex items-center gap-1.5 text-sm mt-2" style={{ color: "#D4D4D4" }}>
                   <Clock size={14} />
@@ -1581,6 +1648,21 @@ export default function LandmarkDemo() {
                       value={d.dest}
                       onChange={(e) => patchDraft(s.id, { dest: e.target.value })}
                       placeholder="Destination"
+                      className="px-2.5 py-1.5 rounded text-sm outline-none"
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
+                    />
+                    <input
+                      value={d.notifyEmail || ""}
+                      onChange={(e) => patchDraft(s.id, { notifyEmail: e.target.value })}
+                      placeholder="Notify email (optional)"
+                      type="email"
+                      className="px-2.5 py-1.5 rounded text-sm outline-none"
+                      style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
+                    />
+                    <input
+                      value={d.notifyPhone || ""}
+                      onChange={(e) => patchDraft(s.id, { notifyPhone: e.target.value })}
+                      placeholder="Notify phone, e.g. +15551234567 (optional)"
                       className="px-2.5 py-1.5 rounded text-sm outline-none"
                       style={{ background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                     />
