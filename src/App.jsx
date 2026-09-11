@@ -381,14 +381,13 @@ export default function LandmarkDemo() {
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
 
-  // Language: null means "no stored preference yet". On first visit (no
-  // saved choice), we detect it once via IP geolocation; after that, the
-  // visitor's own manual choice (if any) always wins and is remembered.
-  const [lang, setLang] = useState(() => localStorage.getItem("landmark-lang") || null);
+  // Language: re-detected fresh via IP geolocation on every page load.
+  // A manual pick from the switcher applies immediately for the current
+  // view, but a refresh always goes back to IP-based detection.
+  const [lang, setLang] = useState(null);
   const L = lang || "en";
 
   useEffect(() => {
-    if (lang) return; // already have a stored preference — don't override it
     let cancelled = false;
     detectLanguageByIP(LANGUAGES.map((l) => l.code)).then((detected) => {
       if (!cancelled) setLang(detected || "en");
@@ -400,11 +399,6 @@ export default function LandmarkDemo() {
 
   useEffect(() => {
     if (!lang) return;
-    try {
-      localStorage.setItem("landmark-lang", lang);
-    } catch (e) {
-      // storage unavailable — language choice just won't persist across visits
-    }
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }, [lang]);
